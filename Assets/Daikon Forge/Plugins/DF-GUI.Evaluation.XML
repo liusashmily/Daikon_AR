@@ -1,0 +1,3628 @@
+<?xml version="1.0"?>
+<doc>
+  <assembly>
+    <name>DF-GUI.Evaluation</name>
+  </assembly>
+  <members>
+    <member name="T:dfInputManager">
+      <summary>
+            Used by the <see cref="T:dfGUIManager" /> to manage user input
+            </summary>
+    </member>
+    <member name="P:dfInputManager.RenderCamera">
+      <summary>
+            Returns the <see cref="T:UnityEngine.Camera" /> that is used to render 
+            the <see cref="T:dfGUIManager" /> and all of its controls
+            </summary>
+    </member>
+    <member name="P:dfInputManager.Adapter">
+      <summary>
+            Gets/Sets a reference to the IInputAdapter object that will be used
+            to translate user input for a specific deployment configuration
+            </summary>
+    </member>
+    <member name="T:IInputAdapter">
+      <summary>
+            Defines an interface that can be impolemented by components that will be
+            used to convert user input. For instance, you might wish to code your 
+            user interface to use KeyCode.JoystickButton0 for a particular task, and 
+            can then use platform- or hardware-specific adapters to convert the 
+            desired button to the target value without having to modify your UI code.
+            </summary>
+    </member>
+    <member name="M:IInputAdapter.GetKeyDown(UnityEngine.KeyCode)">
+      <summary>
+            Returns true during the frame the user starts pressing down the key identified by the given <see cref="T:UnityEngine.KeyCode" /></summary>
+    </member>
+    <member name="M:IInputAdapter.GetKeyUp(UnityEngine.KeyCode)">
+      <summary>
+            Returns true during the frame the user releases the key identified by the given <see cref="T:UnityEngine.KeyCode" /></summary>
+    </member>
+    <member name="M:IInputAdapter.GetAxis(System.String)">
+      <summary>
+             Returns the value of the virtual axis identified by axisName.
+             The value will be in the range -1...1 for keyboard and joystick input. 
+             If the axis is setup to be wheel mouse movement, the mouse wheel is 
+             multiplied by the axis sensitivity and the range is not -1...1. 
+            </summary>
+    </member>
+    <member name="M:IInputAdapter.GetMousePosition">
+      <summary>
+            Returns the current mouse position
+            </summary>
+    </member>
+    <member name="M:IInputAdapter.GetMouseButton(System.Int32)">
+      <summary>
+            Returns whether the given mouse button is held down.
+            </summary>
+      <param name="button">0 for left button, 1 for right button, 2 for the middle button</param>
+    </member>
+    <member name="M:IInputAdapter.GetMouseButtonDown(System.Int32)">
+      <summary>
+            Returns true during the frame the user pressed the given mouse button
+            </summary>
+      <param name="button">0 for left button, 1 for right button, 2 for the middle button</param>
+    </member>
+    <member name="M:IInputAdapter.GetMouseButtonUp(System.Int32)">
+      <summary>
+            Returns true during the frame the user released the given mouse button
+            </summary>
+      <param name="button">0 for left button, 1 for right button, 2 for the middle button</param>
+    </member>
+    <member name="T:dfControl">
+      <summary>
+        <b>Base class for all GUI controls</b>. Provides common functionality, event
+            handling, and properties for all user interface controls.
+            </summary>
+    </member>
+    <member name="F:dfControl.layout">
+      <summary>
+            Responsible for performing control resizing and layout to maintain 
+            the anchor style
+            </summary>
+    </member>
+    <member name="F:dfControl.renderOrder">
+      <summary>
+            Used by the GUI system to correctly determine the order in which 
+            controls should be considered during raycasting
+            </summary>
+    </member>
+    <member name="F:dfControl.isControlInvalidated">
+      <summary>
+            When set to TRUE, indicates that the control's render information is not 
+            synchronized with the control's state and must be regenerated
+            </summary>
+    </member>
+    <member name="F:dfControl.parent">
+      <summary>
+            Gets or sets the parent container of the control
+            </summary>
+    </member>
+    <member name="F:dfControl.controls">
+      <summary>
+            The collection of controls contained within the control
+            </summary>
+    </member>
+    <member name="F:dfControl.manager">
+      <summary>
+            The <see cref="T:dfGUIManager" /> instance which is responsible for rendering this control
+            </summary>
+    </member>
+    <member name="F:dfControl.cachedChildCount">
+      <summary>
+            Used to detect when child nodes have been added to or removed
+            from the dfControl's <see cref="T:UnityEngine.Transform" /></summary>
+    </member>
+    <member name="F:dfControl.cachedPosition">
+      <summary>
+            Used to detect when the user moves the control via the 
+            transform instead of the Position property
+            </summary>
+    </member>
+    <member name="F:dfControl.cachedRotation">
+      <summary>
+            Used to detect when the control's rotation changes, in order
+            to determine whether the control's render data needs to be rebuilt
+            </summary>
+    </member>
+    <member name="F:dfControl.cachedScale">
+      <summary>
+            Used to detect when the control's scale changes, in order 
+            to determine whether the control's render data needs to be rebuilt.
+            Scale is not used by this library directly, but a developer may 
+            wish to use scale for hover effects, etc.
+            </summary>
+    </member>
+    <member name="F:dfControl.cachedPixelSize">
+      <summary>
+            Caching the "world units to pixels" conversion ratio allows the
+            control to somewhat reduce the number of method calls
+            </summary>
+    </member>
+    <member name="F:dfControl.renderData">
+      <summary>
+            Maintains the information needed to render this control
+            </summary>
+    </member>
+    <member name="F:dfControl.isMouseHovering">
+      <summary>
+            Will be set to TRUE when the mouse is over the control. Can be used by 
+            controls to determine how to display their current state
+            </summary>
+    </member>
+    <member name="F:dfControl.isDisposing">
+      <summary>
+            Will be set to TRUE when the object is being destroyed
+            </summary>
+    </member>
+    <member name="M:dfControl.OnMouseEnter(dfMouseEventArgs)">
+      <summary>
+            Called by the <see cref="T:dfInputManager" /> when the mouse enters the
+            bounds of this control
+            </summary>
+      <param name="args">Contains information about the action that triggered this event</param>
+    </member>
+    <member name="M:dfControl.OnMouseLeave(dfMouseEventArgs)">
+      <summary>
+            Called by the <see cref="T:dfInputManager" /> when the mouse leaves the
+            bounds of this control
+            </summary>
+      <param name="args">Contains information about the action that triggered this event</param>
+    </member>
+    <member name="M:dfControl.OnMouseMove(dfMouseEventArgs)">
+      <summary>
+            Called by the <see cref="T:dfInputManager" /> when the mouse is being moved
+            over this control.
+            </summary>
+      <param name="args">Contains information about the action that triggered this event</param>
+    </member>
+    <member name="M:dfControl.OnMouseHover(dfMouseEventArgs)">
+      <summary>
+            Called by the <see cref="T:dfInputManager" /> periodically when the mouse 
+            is within the bounds of this control but is not being moved by the user.
+            </summary>
+      <param name="args">Contains information about the action that triggered this event</param>
+    </member>
+    <member name="M:dfControl.OnMouseWheel(dfMouseEventArgs)">
+      <summary>
+            Called by the <see cref="T:dfInputManager" /> when the user rotates the
+            mouse scroll wheel
+            </summary>
+      <param name="args">Contains information about the mouse action that triggered this event</param>
+    </member>
+    <member name="M:dfControl.OnMouseDown(dfMouseEventArgs)">
+      <summary>
+            Called by <see cref="T:dfInputManager" /> when the user presses a mouse
+            button while the mouse is over this control
+            </summary>
+      <param name="args">Contains information about the mouse action that triggered this event</param>
+    </member>
+    <member name="M:dfControl.OnMouseUp(dfMouseEventArgs)">
+      <summary>
+            Called by <see cref="T:dfInputManager" /> when the user releases a mouse
+            button while the mouse is over this control
+            </summary>
+      <param name="args">Contains information about the mouse action that triggered this event</param>
+    </member>
+    <member name="M:dfControl.DoClick">
+      <summary>
+            Simulates the user clicking on the control
+            </summary>
+    </member>
+    <member name="M:dfControl.OnClick(dfMouseEventArgs)">
+      <summary>
+            Processes a user click event
+            </summary>
+    </member>
+    <member name="M:dfControl.OnDoubleClick(dfMouseEventArgs)">
+      <summary>
+            Processes a user double-click event
+            </summary>
+    </member>
+    <member name="M:dfControl.OnKeyPress(dfKeyEventArgs)">
+      <summary>
+            Called by <see cref="T:dfInputManager" /> when the user presses a key
+            while this control contains input focus. This method differs from
+            <see cref="M:dfControl.OnKeyDown(dfKeyEventArgs)" /> in that it is called to process user 
+            text input events rather than for control key events.
+            </summary>
+      <param name="args">Contains information about the keyboard action that triggered this event</param>
+    </member>
+    <member name="M:dfControl.OnKeyDown(dfKeyEventArgs)">
+      <summary>
+            Called by <see cref="T:dfInputManager" /> when the user presses a key
+            while this control contains input focus. This method differs from 
+            <see cref="M:dfControl.OnKeyPress(dfKeyEventArgs)" /> in that it is called to process control key 
+            events rather than text input events
+            </summary>
+      <param name="args">Contains information about the keyboard action that triggered this event</param>
+    </member>
+    <member name="M:dfControl.OnKeyUp(dfKeyEventArgs)">
+      <summary>
+            Called by <see cref="T:dfInputManager" /> when the user releases a key
+            while this control contains user input focus
+            </summary>
+      <param name="args">Contains information about the keyboard action that triggered this event</param>
+    </member>
+    <member name="M:dfControl.OnEnterFocus(dfFocusEventArgs)">
+      <summary>
+            Called by <see cref="T:dfGUIManager" /> when this control or one of its
+            children (at any level) obtains user input focus. This differs from 
+            the <see cref="M:dfControl.OnGotFocus(dfFocusEventArgs)" /> event in that <see cref="M:dfControl.OnGotFocus(dfFocusEventArgs)" />
+            refers specifically to the control itself gaining input focus, while
+            this method will be called if any control lower in the hierarchy 
+            gains input focus. This is analogous to the difference between the
+            <see cref="P:dfControl.HasFocus" /> and <see cref="P:dfControl.ContainsFocus" /> members.
+            </summary>
+      <param name="args">Contains information about the focus change event</param>
+    </member>
+    <member name="M:dfControl.OnLeaveFocus(dfFocusEventArgs)">
+      <summary>
+            Called by <see cref="T:dfGUIManager" /> when this control and all of its
+            child controls (at any level) no longer contain user input focus. This 
+            differs from <see cref="M:dfControl.OnLostFocus(dfFocusEventArgs)" /> in that <see cref="M:dfControl.OnLostFocus(dfFocusEventArgs)" />
+            refers specifically to the control itself losing input focus, which 
+            this method is only called when all controls lower in the hierarchy no
+            longer have input focus. This is analogous to the difference between the
+            <see cref="P:dfControl.HasFocus" /> and <see cref="P:dfControl.ContainsFocus" /> members.
+            </summary>
+      <param name="args">Contains information about the focus change event</param>
+    </member>
+    <member name="M:dfControl.OnGotFocus(dfFocusEventArgs)">
+      <summary>
+            Called by <see cref="T:dfGUIManager" /> when the control gains input focus
+            </summary>
+      <param name="args">Contains information about the focus change event</param>
+    </member>
+    <member name="M:dfControl.OnLostFocus(dfFocusEventArgs)">
+      <summary>
+            Called by <see cref="T:dfGUIManager" /> when the control loses input focus
+            </summary>
+      <param name="args">Contains information about the focus change event</param>
+    </member>
+    <member name="M:dfControl.RaiseEvent(System.String,System.Object[])">
+      <summary>
+            Raises the named event. This method is only provided for the use of 
+            derived classes, which cannot directly raise events on a base class
+            due to constraints in the C# language specification.
+            </summary>
+      <param name="eventName">The name of the event to be raise (Click, MouseDown, etc)</param>
+      <param name="args">The parameters to be passed to the event</param>
+    </member>
+    <member name="M:dfControl.Signal(System.String,System.Object[])">
+      <summary>
+            Performs a SendMessage()-like event notification by searching the GameObject
+            for components which have a method with the same name as the <paramref name="eventName" />
+            parameter and which have a signature that matches the types in the 
+            <paramref name="args" /> array. 
+            </summary>
+      <param name="eventName">The name of the method to invoke</param>
+      <param name="args">The parameters that will be passed to the method</param>
+      <returns>Returns TRUE if a matching event handler was found and invoked</returns>
+    </member>
+    <member name="M:dfControl.Signal(UnityEngine.GameObject,System.String,System.Object[])">
+      <summary>
+            Performs a SendMessage()-like event notification by searching the GameObject
+            for components which have a method with the same name as the <paramref name="eventName" />
+            parameter and which have a signature that matches the types in the 
+            <paramref name="args" /> array. 
+            </summary>
+      <param name="target">The GameObject on which to raise the event</param>
+      <param name="eventName">The name of the method to invoke</param>
+      <param name="args">The parameters that will be passed to the method</param>
+      <returns>Returns TRUE if a matching event handler was found and invoked</returns>
+    </member>
+    <member name="M:dfControl.RemoveEventHandlers(System.String)">
+      <summary>
+            Detaches all event handlers for the named event
+            </summary>
+      <param name="EventName">
+      </param>
+    </member>
+    <member name="M:dfControl.Show">
+      <summary>
+            Show the control. Bindable alternative to setting IsVisible = true
+            </summary>
+    </member>
+    <member name="M:dfControl.Hide">
+      <summary>
+            Hide the control. Bindable alternative to setting IsVisible = false
+            </summary>
+    </member>
+    <member name="M:dfControl.Enable">
+      <summary>
+            Enable the control. Bindable alternative to setting IsEnabled = true
+            </summary>
+    </member>
+    <member name="M:dfControl.Disable">
+      <summary>
+            Disables the control. Bindable alternative to setting IsEnabled = false
+            </summary>
+    </member>
+    <member name="M:dfControl.GetHitPosition(UnityEngine.Ray,UnityEngine.Vector2@)">
+      <summary>
+            Returns the relative position in screen coordinates (X increases to the right, 
+            Y increases downward, top-left origin) of the point where the ray intersects this control. Returns 
+            TRUE if the ray intersects the control and assigns the relative hit location to 
+            the <paramref name="position" /> argument.
+            </summary>
+    </member>
+    <member name="M:dfControl.Find``1(System.String)">
+      <summary>
+            Performs a breadth-first search for a dfControl instance with the same
+            name as the <paramref name="Name" /> argument <i>and</i> which is of the specified Type. 
+            This search is case-sensitive.
+            </summary>
+      <typeparam name="T">The Type of control to find (must derive from <see cref="T:dfControl" />)</typeparam>
+      <param name="Name">The name of the dfControl you wish to find</param>
+      <returns>TRUE if the dfControl was located, FALSE otherwise</returns>
+    </member>
+    <member name="M:dfControl.Find(System.String)">
+      <summary>
+            Performs a breadth-first search for a dfControl instance with the same
+            name as the <paramref name="Name" /> argument. This search is case-sensitive.
+            </summary>
+      <param name="Name">The name of the dfControl you wish to find</param>
+      <returns>TRUE if the dfControl was located, FALSE otherwise</returns>
+    </member>
+    <member name="M:dfControl.Focus">
+      <summary>
+            Sets the global input focus to this object
+            </summary>
+    </member>
+    <member name="M:dfControl.Unfocus">
+      <summary>
+            Removes global input focus from this object
+            </summary>
+    </member>
+    <member name="M:dfControl.GetRootContainer">
+      <summary>
+            Returns a reference to the top-most container for this control
+            </summary>
+    </member>
+    <member name="M:dfControl.BringToFront">
+      <summary>
+            Brings this control to the front so that it appears in front of all 
+            other controls within the same container
+            </summary>
+    </member>
+    <member name="M:dfControl.SendToBack">
+      <summary>
+            Sends this control to the back so that it appears behind all 
+            other controls within the same container
+            </summary>
+    </member>
+    <member name="M:dfControl.Invalidate">
+      <summary>
+            Called when the control needs to rebuild its render information
+            </summary>
+    </member>
+    <member name="M:dfControl.PerformLayout">
+      <summary>
+            Causes this control to update its layout
+            </summary>
+    </member>
+    <member name="M:dfControl.SuspendLayout">
+      <summary>
+            Temporarily suspends the layout logic for the control
+            </summary>
+    </member>
+    <member name="M:dfControl.ResumeLayout">
+      <summary>
+            Resumes usual layout logic
+            </summary>
+    </member>
+    <member name="M:dfControl.CalculateMinimumSize">
+      <summary>
+            Used during layout to determine the effective minimum size of the control,
+            which may be different than that specified by the MinimumSize property. 
+            </summary>
+      <returns>A Vector2 value that represents the minimum control size</returns>
+    </member>
+    <member name="M:dfControl.MakePixelPerfect">
+      <summary>
+            Causes this control to align its <see cref="P:dfControl.Position" /> and <see cref="P:dfControl.Size" />
+            properties so that they lie exactly on pixel boundaries
+            </summary>
+    </member>
+    <member name="M:dfControl.GetBounds">
+      <summary>
+            Returns the axis-aligned bounding box enclosing this <see cref="T:dfControl" /></summary>
+    </member>
+    <member name="M:dfControl.GetCenter">
+      <summary>
+            Returns a <see cref="T:UnityEngine.Vector3" /> representing the global 
+            coordinates of the dfControl's center
+            </summary>
+    </member>
+    <member name="M:dfControl.GetCorners">
+      <summary>
+            Returns an array of Vector3 values corresponding to the global
+            positions of this object's bounding box. The corners are specified
+            in the following order: Top Left, Top Right, Bottom Left, Bottom Right
+            </summary>
+    </member>
+    <member name="M:dfControl.GetCamera">
+      <summary>
+            Returns a reference to the <see cref="T:UnityEngine.Camera" /> that is
+            responsible for rendering this <see cref="T:dfControl" /></summary>
+    </member>
+    <member name="M:dfControl.GetScreenRect">
+      <summary>
+            Returns the Screen-based coordinates containing this control
+            </summary>
+    </member>
+    <member name="M:dfControl.GetManager">
+      <summary>
+            Returns a reference to the <see cref="T:dfGUIManager" /> instance that 
+            is responsible for rendering the control
+            </summary>
+    </member>
+    <member name="M:dfControl.PixelsToUnits">
+      <summary>
+            Returns a number representing the conversion of World Units to pixels,
+            used to convert a dfControl's "pixel-based" position and location properties
+            into world units for rendering and raycasting purposes.
+            </summary>
+    </member>
+    <member name="M:dfControl.Contains(dfControl)">
+      <summary>
+            Retrieves a value indicating whether the specified control is a child of this control.
+            </summary>
+      <param name="child">The <see cref="T:dfControl" /> to evaluate</param>
+      <returns>TRUE if the specified control is a child of the control and FALSE otherwise</returns>
+    </member>
+    <member name="M:dfControl.OnRebuildRenderData">
+      <summary>
+            Called by the <see cref="T:dfControl" /> class during rendering to 
+            allow any derived classes to rebuild the <see cref="F:dfControl.renderData" />
+            buffer.
+            </summary>
+    </member>
+    <member name="M:dfControl.OnControlAdded(dfControl)">
+      <summary>
+            Raises the ControlAdded event
+            </summary>
+    </member>
+    <member name="M:dfControl.OnControlRemoved(dfControl)">
+      <summary>
+            Raises the ControlRemoved event
+            </summary>
+    </member>
+    <member name="M:dfControl.OnPositionChanged">
+      <summary>
+            Raises the PositionChanged event
+            </summary>
+    </member>
+    <member name="M:dfControl.OnSizeChanged">
+      <summary>
+            Raises the SizeChanged event
+            </summary>
+    </member>
+    <member name="M:dfControl.OnPivotChanged">
+      <summary>
+            Raises the PivotChanged event
+            </summary>
+    </member>
+    <member name="M:dfControl.OnAnchorChanged">
+      <summary>
+            Raises the AnchorChanged event
+            </summary>
+    </member>
+    <member name="M:dfControl.CalculateOpacity">
+      <summary>
+            Calculates the final opacity of this control, taking into account
+            the opacity of all controls higher in the control hierarchy
+            </summary>
+      <returns>The final opacity that should be used to render this control</returns>
+    </member>
+    <member name="M:dfControl.ApplyOpacity(UnityEngine.Color32)">
+      <summary>
+            Applies the results of <see cref="M:dfControl.CalculateOpacity" /> to the given 
+            <see cref="T:UnityEngine.Color32" /> value. This is a convenience function used 
+            to determine vector colors when rendering the control.
+            </summary>
+    </member>
+    <member name="M:dfControl.GetHitPosition(dfMouseEventArgs)">
+      <summary>
+            Returns the relative position in screen coordinates of the mouse cursor within
+            the bounds of the control. Returns (Vector2.one * float.MinValue) if the mouse
+            cursor does not fall within the bounds of the control.
+            </summary>
+    </member>
+    <member name="M:dfControl.getScaledDirection(UnityEngine.Vector3)">
+      <summary>
+            Transforms a direction vector and scales it to the same scale
+            as the Manager which contains this control
+            </summary>
+      <param name="direction">
+      </param>
+      <returns>
+      </returns>
+    </member>
+    <member name="M:dfControl.transformOffset(UnityEngine.Vector3)">
+      <summary>
+            Transforms and scales a vector such that it will always
+            represent the same fixed distance on-screen even when the 
+            user interface is scaled
+            </summary>
+      <param name="offset">
+      </param>
+      <returns>
+      </returns>
+    </member>
+    <member name="M:dfControl.OnResolutionChanged(UnityEngine.Vector2,UnityEngine.Vector2)">
+      <summary>
+            This function is called by the GUI system when the screen resolution has changed.
+            </summary>
+      <param name="previousResolution">The previous screen resolution</param>
+      <param name="currentResolution">The new screen resolution</param>
+    </member>
+    <member name="M:dfControl.Awake">
+      <summary>
+            Awake is called by the Unity engine when the script instance is being loaded.
+            </summary>
+    </member>
+    <member name="M:dfControl.Start">
+      <summary>
+            Start is called by the Unity engine before any of the <see cref="M:dfControl.Update" /> 
+            methods is called for the first time
+            </summary>
+    </member>
+    <member name="M:dfControl.OnEnable">
+      <summary>
+            This function is called by the Unity engine when the object becomes enabled and active.
+            </summary>
+    </member>
+    <member name="M:dfControl.OnApplicationQuit">
+      <summary>
+            Sent to all game objects by the Unity engine before the application is quit.
+            </summary>
+    </member>
+    <member name="M:dfControl.OnDisable">
+      <summary>
+            This function is called by the Unity engine when the cotnrol becomes 
+            disabled or inactive.
+            </summary>
+    </member>
+    <member name="M:dfControl.OnDestroy">
+      <summary>
+            This function is called by the Unity engine when the control will be destroyed.
+            </summary>
+    </member>
+    <member name="M:dfControl.LateUpdate">
+      <summary>
+            Called by the Unity engine every frame (after <see cref="M:dfControl.Update" />) if
+            the control component is enabled
+            </summary>
+    </member>
+    <member name="M:dfControl.Update">
+      <summary>
+            Called by the Unity engine every frame if the control component is enabled
+            </summary>
+    </member>
+    <member name="M:dfControl.AddControl``1">
+      <summary>
+            Creates a new <see cref="T:dfControl" /> instance of the specified
+            type and adds it as a child of this instance
+            </summary>
+      <typeparam name="T">The type of control to be created</typeparam>
+      <returns>A reference to the newly-created control instance</returns>
+    </member>
+    <member name="M:dfControl.AddControl(System.Type)">
+      <summary>
+            Creates a new <see cref="T:dfControl" /> instance of the specified
+            type and adds it as a child of this instance
+            </summary>
+      <param name="ControlType">The type of control to be created</param>
+      <returns>A reference to the newly-created control instance</returns>
+    </member>
+    <member name="M:dfControl.AddControl(dfControl)">
+      <summary>
+            Adds the child control to the list of child controls for this instance
+            </summary>
+      <param name="child">The <see cref="T:dfControl" /> instance to add to the list of child controls</param>
+    </member>
+    <member name="M:dfControl.RemoveControl(dfControl)">
+      <summary>
+            Removes the indicated control from the list of child controls for this instance
+            </summary>
+      <param name="child">The control to remove from the list of child controls</param>
+    </member>
+    <member name="M:dfControl.CompareTo(dfControl)">
+      <summary>
+            Used to compare <see cref="T:dfControl" /> instances in order to 
+            sort them according to <see cref="P:dfControl.ZOrder" /> value.
+            </summary>
+      <param name="other">The other <see cref="T:dfControl" /> instance to compare against</param>
+      <returns>
+            A signed number indicating the relative values of this instance and value: 
+            Less than zero if this instance has a lower ZOrder value than <paramref name="other" />, 
+            greater than zero if this instance has a higher ZOrder value than <paramref name="other" />,
+            and zero if both instances have the same ZOrder value
+            </returns>
+    </member>
+    <member name="E:dfControl.ControlAdded">
+      <summary>
+            Occurs when a control is added to the Controls collection
+            </summary>
+    </member>
+    <member name="E:dfControl.ControlRemoved">
+      <summary>
+            Occurs when a control is removed from the Controls collection
+            </summary>
+    </member>
+    <member name="E:dfControl.GotFocus">
+      <summary>
+            Occurs when the control receives input focus
+            </summary>
+    </member>
+    <member name="E:dfControl.EnterFocus">
+      <summary>
+            Occurs when the control or any of its child controls receives input focus
+            </summary>
+    </member>
+    <member name="E:dfControl.LostFocus">
+      <summary>
+            Occurs when the control loses input focus
+            </summary>
+    </member>
+    <member name="E:dfControl.LeaveFocus">
+      <summary>
+            Occurs when the control and all of its child controls lose input focus
+            </summary>
+    </member>
+    <member name="E:dfControl.TabIndexChanged">
+      <summary>
+            Occurs when the control's TabIndex property is changed
+            </summary>
+    </member>
+    <member name="E:dfControl.PositionChanged">
+      <summary>
+            Occurs when the control's Position property is changed
+            </summary>
+    </member>
+    <member name="E:dfControl.SizeChanged">
+      <summary>
+            Occurs when the control's Size propert is changed
+            </summary>
+    </member>
+    <member name="E:dfControl.ColorChanged">
+      <summary>
+            Occurs when the control's Color value changes
+            </summary>
+    </member>
+    <member name="E:dfControl.IsVisibleChanged">
+      <summary>
+            Occurs when the control's Visible property changes
+            </summary>
+    </member>
+    <member name="E:dfControl.IsEnabledChanged">
+      <summary>
+            Occurs when the control's Enabled property value changes
+            </summary>
+    </member>
+    <member name="E:dfControl.OpacityChanged">
+      <summary>
+            Occurs when the control's Opacity property value changes
+            </summary>
+    </member>
+    <member name="E:dfControl.AnchorChanged">
+      <summary>
+            Occurs when the control's Anchor property value changes
+            </summary>
+    </member>
+    <member name="E:dfControl.PivotChanged">
+      <summary>
+            Occurs when the control's Pivot property value changes
+            </summary>
+    </member>
+    <member name="E:dfControl.ZOrderChanged">
+      <summary>
+            Occurs when the control's ZOrder property value changes
+            </summary>
+    </member>
+    <member name="E:dfControl.DragStart">
+      <summary> Occurs (on the source dfControl) when a drag-and-drop operation is starting </summary>
+    </member>
+    <member name="E:dfControl.DragEnd">
+      <summary> Occurs (on the source dfControl) when a drag-and-drop operation has ended </summary>
+    </member>
+    <member name="E:dfControl.DragDrop">
+      <summary> Occurs when a drag-and-drop operation is completed </summary>
+    </member>
+    <member name="E:dfControl.DragEnter">
+      <summary> Occurs when an object is dragged into the control's bounds </summary>
+    </member>
+    <member name="E:dfControl.DragLeave">
+      <summary> Occurs when an object is dragged out of the control's bounds </summary>
+    </member>
+    <member name="E:dfControl.DragOver">
+      <summary> Occurs when an object is dragged over the control's bounds </summary>
+    </member>
+    <member name="E:dfControl.KeyPress">
+      <summary> Occurs when the user presses a key while the control has input focus </summary>
+    </member>
+    <member name="E:dfControl.KeyDown">
+      <summary> Occurs when the user presses a key while the control has input focus </summary>
+    </member>
+    <member name="E:dfControl.KeyUp">
+      <summary> Occurs when the user releases a key while the control has input focus </summary>
+    </member>
+    <member name="E:dfControl.MouseEnter">
+      <summary> Occurs when the mouse pointer enters the control </summary>
+    </member>
+    <member name="E:dfControl.MouseMove">
+      <summary> Occurs when the mouse pointer is moved over the control </summary>
+    </member>
+    <member name="E:dfControl.MouseHover">
+      <summary> Occurs when the mouse pointer rests on the control </summary>
+    </member>
+    <member name="E:dfControl.MouseLeave">
+      <summary> Occurs when the mouse pointer leaves the control </summary>
+    </member>
+    <member name="E:dfControl.MouseDown">
+      <summary> Occurs when the mouse pointer is over the control and a mouse button is pressed </summary>
+    </member>
+    <member name="E:dfControl.MouseUp">
+      <summary> Occurs when a mouse button had previously been pressed on a control and a mouse button is released while the pointer is still over the control </summary>
+    </member>
+    <member name="E:dfControl.MouseWheel">
+      <summary> Occurs when the mouse wheel moves while the control has focus </summary>
+    </member>
+    <member name="E:dfControl.Click">
+      <summary> Occurs when the control is clicked by the mouse </summary>
+    </member>
+    <member name="E:dfControl.DoubleClick">
+      <summary> Occurs when the control is double clicked by the mouse </summary>
+    </member>
+    <member name="P:dfControl.GUIManager">
+      <summary>
+            Returns a reference to the <see cref="T:dfGUIManager" /> instance 
+            responsible for rendering this <see cref="T:dfControl" /></summary>
+    </member>
+    <member name="P:dfControl.IsEnabled">
+      <summary>
+            Gets or sets a value indicating whether the control can respond to 
+            user interaction.
+            </summary>
+    </member>
+    <member name="P:dfControl.IsVisible">
+      <summary>
+            Gets or sets a value indicating whether the control and all its child 
+            controls are displayed.
+            </summary>
+    </member>
+    <member name="P:dfControl.IsInteractive">
+      <summary>
+            Gets/Sets a value indicating whether the control is user-interactive,
+            ie: Whether the control responds to user input. This flag controls 
+            whether the control has an active BoxCollider, because there are real
+            performance implications for having a collider on a large number of
+            controls that will never process user input.
+            </summary>
+    </member>
+    <member name="P:dfControl.Tooltip">
+      <summary>
+            The tooltip to be displayed to the user when the mouse hovers over 
+            the control. Currently not used directly by this library.
+            </summary>
+    </member>
+    <member name="P:dfControl.Anchor">
+      <summary>
+            Gets or sets the edges of the container to which a control is bound 
+            and determines how a control is resized with its parent. 
+            </summary>
+    </member>
+    <member name="P:dfControl.Opacity">
+      <summary>
+            Gets or sets the opacity level of the control
+            </summary>
+    </member>
+    <member name="P:dfControl.Color">
+      <summary>
+            Gets or sets the color of the control
+            </summary>
+    </member>
+    <member name="P:dfControl.DisabledColor">
+      <summary>
+            Gets or sets the color that will be used when this control is disabled
+            </summary>
+    </member>
+    <member name="P:dfControl.Pivot">
+      <summary>
+            Gets or sets the Pivot Point of the control
+            </summary>
+    </member>
+    <member name="P:dfControl.RelativePosition">
+      <summary>
+            Returns the relative coordinates of the upper-left corner of the control
+            relative to the upper-left corner of the parent control, expressed in 
+            "screen space" coordinates (left-top origin): x increases right, 
+            y increases down
+            </summary>
+    </member>
+    <member name="P:dfControl.Position">
+      <summary>
+            Gets or sets the local position of the upper-left
+            corner of the control relative to its container's 
+            pivot point
+            </summary>
+    </member>
+    <member name="P:dfControl.Size">
+      <summary>
+            Gets or sets the size (in pixels) of the control
+            </summary>
+    </member>
+    <member name="P:dfControl.Width">
+      <summary>
+            Gets or sets the width of the control in pixels
+            </summary>
+    </member>
+    <member name="P:dfControl.Height">
+      <summary>
+            Gets or sets the height of the control in pixels
+            </summary>
+    </member>
+    <member name="P:dfControl.MinimumSize">
+      <summary>
+            Gets or sets the minimum allowed size of the control
+            </summary>
+    </member>
+    <member name="P:dfControl.MaximumSize">
+      <summary>
+            Gets or sets the maximum allowed size of the control
+            </summary>
+    </member>
+    <member name="P:dfControl.ZOrder">
+      <summary>
+            Gets/Sets a value indicating the rendering order of this control
+            </summary>
+    </member>
+    <member name="P:dfControl.TabIndex">
+      <summary>
+            Gets or sets the tab order of the control within its container. Set this
+            value to -1 to remove this control from the tab order.
+            </summary>
+    </member>
+    <member name="P:dfControl.Controls">
+      <summary>
+            Gets the collection of controls contained within the control
+            </summary>
+    </member>
+    <member name="P:dfControl.Parent">
+      <summary>
+            Gets the parent container of the control
+            </summary>
+    </member>
+    <member name="P:dfControl.ClipChildren">
+      <summary>
+            Indicates whether child controls will be clipped to the bounds 
+            of this control
+            </summary>
+    </member>
+    <member name="P:dfControl.IsLayoutSuspended">
+      <summary>
+            Returns a value indicating whether the dfControl's layout engine is 
+            currently suspended
+            </summary>
+    </member>
+    <member name="P:dfControl.IsPerformingLayout">
+      <summary>
+            Returns TRUE if the control is currently performing a layout operation
+            and FALSE otherwise
+            </summary>
+    </member>
+    <member name="P:dfControl.Tag">
+      <summary>
+            Can be used to store additional data about the control instance
+            </summary>
+    </member>
+    <member name="P:dfControl.CanFocus">
+      <summary>
+            Gets a value indicating whether the control can receive focus.
+            </summary>
+    </member>
+    <member name="P:dfControl.ContainsFocus">
+      <summary>
+            Gets a value indicating whether the control, or one of its child controls, currently has the input focus.
+            </summary>
+    </member>
+    <member name="P:dfControl.HasFocus">
+      <summary>
+            Gets a value indicating whether the control has user input focus.
+            </summary>
+    </member>
+    <member name="P:dfControl.ContainsMouse">
+      <summary>
+            Returns TRUE when the mouse is contained within the bounds of the control
+            </summary>
+    </member>
+    <member name="P:dfControl.RenderOrder">
+      <summary>
+            Returns the order in which this dfControl will be rendered.
+            </summary>
+    </member>
+    <member name="T:dfControl.AnchorLayout">
+      <summary>
+            Implements basic Anchor Layout - Allows the control to "anchor" each edge
+            to the corresponding edge of its container such that the control resizes 
+            properly when its container is resized.
+            @internal
+            </summary>
+    </member>
+    <member name="M:dfControl.AnchorLayout.ToString">
+      <summary>
+            Returns a formatted string summarizing this object's state
+            </summary>
+    </member>
+    <member name="T:dfIntersectionType">
+      <summary>
+            Indicates the result of testing a dfControl for intersection against
+            a list of Planes.
+            </summary>
+            @class dfIntersectionType
+        </member>
+    <member name="F:dfIntersectionType.None">
+      <summary>
+            Control lies entirely outside of clipping region 
+            </summary>
+    </member>
+    <member name="F:dfIntersectionType.Inside">
+      <summary>
+            Control lies entirely inside of clipping region 
+            </summary>
+    </member>
+    <member name="F:dfIntersectionType.Intersecting">
+      <summary>
+            Control is intersected by one or more clipping planes
+            </summary>
+    </member>
+    <member name="T:dfMobileKeyboardTrigger">
+      <summary>
+            Specifies when a dfControl should display the on-screen keyboard 
+            on a mobile platform
+            </summary>
+            @class dfMobileKeyboardTrigger
+        </member>
+    <member name="F:dfMobileKeyboardTrigger.Manual">
+      <summary>
+            The dfControl will not automatically display the mobile keyboard
+            </summary>
+    </member>
+    <member name="F:dfMobileKeyboardTrigger.ShowOnFocus">
+      <summary>
+            The dfControl will show the mobile keyboard when it receives input focus
+            </summary>
+    </member>
+    <member name="F:dfMobileKeyboardTrigger.ShowOnClick">
+      <summary>
+            The dfControl will show the mobile keyboard when it is clicked
+            </summary>
+    </member>
+    <member name="T:dfProgressFillMode">
+      <summary>
+            Specifies how the progress indicator on a dfProgressBar or dfSlider 
+            control will be sized.
+            </summary>
+            @class dfProgressFillMode
+        </member>
+    <member name="F:dfProgressFillMode.Stretch">
+      <summary>
+            The progress indicator will be stretched
+            </summary>
+    </member>
+    <member name="F:dfProgressFillMode.Fill">
+      <summary>
+            The progress indicator will use dfSprite Fill 
+            </summary>
+    </member>
+    <member name="T:dfControlOrientation">
+      <summary>
+            Specifies the orientation of controls or elements of controls
+            </summary>
+            @class dfControlOrientation
+        </member>
+    <member name="F:dfControlOrientation.Horizontal">
+      <summary>
+            The control or element is oriented horizontally
+            </summary>
+    </member>
+    <member name="F:dfControlOrientation.Vertical">
+      <summary>
+            The control or element is oriented vertically
+            </summary>
+    </member>
+    <member name="T:dfDragDropState">
+      <summary>
+            Indicates the state of the current Drag-and-Drop operation
+            </summary>
+            @class dfDragDropState
+        </member>
+    <member name="T:dfFillDirection">
+      <summary>
+            Indicates the direction that a dfSprite will use for Fill operations
+            </summary>
+            @class dfFillDirection
+        </member>
+    <member name="T:dfAnchorStyle">
+      <summary>
+            When a control is anchored to an edge of its container, the distance between 
+            the control and the specified edge remains constant when the container resizes. 
+            For example, if a control is anchored to the right edge of its container, the 
+            distance between the right edge of the control and the right edge of the container 
+            remains constant when the container resizes. A control can be anchored to any 
+            combination of control edges. If the control is anchored to opposite edges of 
+            its container (for example, to the top and bottom), it resizes when the container 
+            resizes. If a control has its Anchor property set to AnchorStyle.None, control 
+            will behave as if it's anchor was set to Anchor.Top | Anchor.Left if it is the
+            child of another control, or if it is a top-level control the behavior (in the
+            case of the screen resolution changing) is unspecified.
+            </summary>
+            @class dfAnchorStyle
+        </member>
+    <member name="F:dfAnchorStyle.Top">
+      <summary>The control is anchored to the top edge of its container.</summary>
+    </member>
+    <member name="F:dfAnchorStyle.Bottom">
+      <summary>The control is anchored to the bottom edge of its container.</summary>
+    </member>
+    <member name="F:dfAnchorStyle.Left">
+      <summary>The control is anchored to the left edge of its container.</summary>
+    </member>
+    <member name="F:dfAnchorStyle.Right">
+      <summary>The control is anchored to the right edge of its container.</summary>
+    </member>
+    <member name="F:dfAnchorStyle.All">
+      <summary>The control is anchored to all edges of its container</summary>
+    </member>
+    <member name="F:dfAnchorStyle.CenterHorizontal">
+      <summary>The control will be horizontally centered within its container</summary>
+    </member>
+    <member name="F:dfAnchorStyle.CenterVertical">
+      <summary>The control will be vertically centered within its container</summary>
+    </member>
+    <member name="F:dfAnchorStyle.None">
+      <summary>The control is not anchored to any edges of its container.</summary>
+    </member>
+    <member name="T:dfAnchorMargins">
+      <summary>
+            Represents the distance between the control's edges and the corresponding
+            edges of the control's container. This information is used to dynamically 
+            resize controls that have an Anchor Layout defined.
+            </summary>
+            @class dfAnchorMargins
+        </member>
+    <member name="F:dfAnchorMargins.left">
+      <summary>
+            Represents the distance between the left edge of the <see cref="T:dfControl" />
+            and the left edge of its container
+            </summary>
+    </member>
+    <member name="F:dfAnchorMargins.top">
+      <summary>
+            Represents the distance between the top edge of the <see cref="T:dfControl" />
+            and the top edge of its container
+            </summary>
+    </member>
+    <member name="F:dfAnchorMargins.right">
+      <summary>
+            Represents the distance between the right edge of the <see cref="T:dfControl" />
+            and the right edge of its container
+            </summary>
+    </member>
+    <member name="F:dfAnchorMargins.bottom">
+      <summary>
+            Represents the distance between the bottom edge of the <see cref="T:dfControl" />
+            and the bottom edge of its container
+            </summary>
+    </member>
+    <member name="M:dfAnchorMargins.ToString">
+      <summary>
+            Returns a formatted string summarizing this object's state
+            </summary>
+    </member>
+    <member name="T:dfSpriteFlip">
+      <summary>
+            Indicates the axes that will be flipped when a sprite is rendered
+            </summary>
+            @class dfSpriteFlip
+        </member>
+    <member name="F:dfSpriteFlip.None">
+      <summary>
+            Not flipped
+            </summary>
+    </member>
+    <member name="F:dfSpriteFlip.FlipHorizontal">
+      <summary>
+            Flip along the horizontal axis
+            </summary>
+    </member>
+    <member name="F:dfSpriteFlip.FlipVertical">
+      <summary>
+            Flip along the vertical axis
+            </summary>
+    </member>
+    <member name="T:dfPivotPoint">
+      <summary>
+            Used to indicate the "origin" or pivot point of a control or render element.
+            Controls will rotate around this point, and resize operations will resize 
+            away from this point.
+            </summary>
+            @class dfPivotPoint
+        </member>
+    <member name="M:dfPivotExtensions.TransformToCenter(dfPivotPoint,UnityEngine.Vector2)">
+      <summary>
+            Returns the value needed to translate the control's Transform.localposition
+            value to the center of the control
+            </summary>
+      <param name="pivot">
+      </param>
+      <param name="size">
+      </param>
+      <returns>
+      </returns>
+    </member>
+    <member name="M:dfPivotExtensions.TransformToUpperLeft(dfPivotPoint,UnityEngine.Vector2)">
+      <summary>
+            Returns the offset of the control's upper left corner with respect to 
+            the GameObject's Transform.localposition value
+            </summary>
+      <param name="pivot">
+      </param>
+      <returns>
+      </returns>
+    </member>
+    <member name="T:dfRenderData">
+      <summary>
+            Encapsulates the information needed to render a control as a Mesh.
+            GUI Controls will fill this structure with all of the information 
+            needed to render the control on-screen as a Mesh, with the implicit 
+            assumption that all vertex coordinates are parent-relative coordinates 
+            and that all uv coordinates refer to locations within a common
+            texture atlas or <see cref="!:Material.mainTexture" />.
+            </summary>
+    </member>
+    <member name="M:dfRenderData.Obtain">
+      <summary>
+            Obtains a <see cref="T:dfRenderData" /> instance from the object pool
+            </summary>
+      <returns>A <see cref="T:dfRenderData" /> instance that can be used to 
+            receive <see cref="T:dfControl" /> render data</returns>
+    </member>
+    <member name="M:dfRenderData.FlushObjectPool">
+      <summary>
+            Flushes the <see cref="T:dfRenderData" /> object pool, freeing all 
+            memory. This operation should only be performed when a new level
+            is loaded.
+            </summary>
+    </member>
+    <member name="M:dfRenderData.Release">
+      <summary>
+            Returns the <see cref="T:dfRenderData" /> instance to the object pool
+            </summary>
+    </member>
+    <member name="M:dfRenderData.Clear">
+      <summary>
+            Used to reset all lists in preparation for filling with new or
+            updated rendering data. NOTE: While this function does appear
+            to empty the data lists, it does not free the internal memory 
+            used to hold the information, with the assumption that this 
+            will result in fewer garbage collections.
+            </summary>
+    </member>
+    <member name="M:dfRenderData.IsValid">
+      <summary>
+            Returns a value indicating whether the data in this object can be 
+            used to create a valid Mesh.
+            </summary>
+      <returns>
+      </returns>
+    </member>
+    <member name="M:dfRenderData.EnsureCapacity(System.Int32)">
+      <summary>
+            Ensures that the lists have enough memory allocated to store
+            the number of elements indicated by <paramref name="capacity" />, 
+            to reduce memory thrashing
+            </summary>
+      <param name="capacity">
+      </param>
+    </member>
+    <member name="M:dfRenderData.Merge(dfRenderData,System.Boolean)">
+      <summary>
+            Merges another <see cref="T:dfRenderData" /> instance with this instance
+            </summary>
+      <param name="buffer">The render data to be appended to this instance</param>
+      <param name="transformVertices">If set to TRUE, the render data in 
+            <paramref name="buffer" /> will be transformed by its <see cref="P:dfRenderData.Transform" /> 
+            before being merged with this instance. If set to FALSE, the data will be 
+            merged without tranforming.</param>
+    </member>
+    <member name="M:dfRenderData.ToString">
+      <summary>
+            Returns a formatted string summarizing this object's state
+            </summary>
+    </member>
+    <member name="P:dfRenderData.Material">
+      <summary>
+            The <see cref="T:UnityEngine.Material" /> which will be used as the source
+            Material for rendering
+            </summary>
+    </member>
+    <member name="P:dfRenderData.Transform">
+      <summary>
+            The transformation matrix (if any) that needs to be applied to the 
+            vertices before rendering. Typically this will be a "local to world" 
+            matrix.
+            </summary>
+    </member>
+    <member name="P:dfRenderData.Vertices">
+      <summary>
+            The list of vertices used to render the mesh
+            </summary>
+    </member>
+    <member name="P:dfRenderData.UV">
+      <summary>
+            The list of UV coordinates for each vertex
+            </summary>
+    </member>
+    <member name="P:dfRenderData.Triangles">
+      <summary>
+            A list of triangle indices
+            </summary>
+    </member>
+    <member name="P:dfRenderData.Colors">
+      <summary>
+            A list of colors for each vertex
+            </summary>
+    </member>
+    <member name="P:dfRenderData.Checksum">
+      <summary>
+            Used by GUIManager to determine whether cached data is 
+            still valid
+            </summary>
+    </member>
+    <member name="P:dfRenderData.Intersection">
+      <summary>
+            Contains the cached results from the last intersection test
+            performed on the contained render data. Used by GUIManager 
+            to determine whether a new intersection test needs to be 
+            performed for triangle clipping
+            </summary>
+    </member>
+    <member name="T:dfList`1">
+      <summary>
+            Defines a simplified Generic List customized specifically for 
+            game development - Implements object pooling, minimizes memory
+            allocations during common operations, replaces common extension
+            methods with bespoke implementations that do not allocate 
+            iterators, etc.
+            </summary>
+    </member>
+    <!-- Badly formed XML comment ignored for member "M:dfList`1.Obtain" -->
+    <!-- Badly formed XML comment ignored for member "M:dfList`1.Obtain(System.Int32)" -->
+    <member name="M:dfList`1.Enqueue(`0)">
+      <summary>
+            Adds a new item to the end of the list. Provided only for call-level 
+            compatability with code that treats this collection as a queue.
+            </summary>
+    </member>
+    <member name="M:dfList`1.Dequeue">
+      <summary>
+            Returns the first item in the collection and removes it from the list. 
+            Provided only for call-level compatability with code that treats this 
+            collection as a queue.
+            </summary>
+    </member>
+    <!-- Badly formed XML comment ignored for member "M:dfList`1.Clone" -->
+    <member name="M:dfList`1.Release">
+      <summary>
+            Releases the <see cref="!:dfList" /> back to the object pool
+            </summary>
+    </member>
+    <member name="M:dfList`1.Reverse">
+      <summary>
+            Reverses the order of the elements in the list
+            </summary>
+    </member>
+    <member name="M:dfList`1.Sort">
+      <summary>
+            Sorts the elements in the entire <see cref="!:dfList" /> using the default comparer.
+            </summary>
+    </member>
+    <member name="M:dfList`1.Sort(System.Collections.Generic.IComparer{`0})">
+      <summary>
+            Sorts the elements in the entire <see cref="!:dfList" /> using the specified comparer.
+            </summary>
+    </member>
+    <member name="M:dfList`1.Sort(System.Comparison{`0})">
+      <summary>
+            Sorts the elements in the entire <see cref="!:System.Collections.Generic.List" /> using the specified <see cref="!:System.Comparison" />.
+            </summary>
+      <param name="comparison">The <see cref="!:System.Comparison" /> to use when comparing elements.</param>
+    </member>
+    <member name="M:dfList`1.EnsureCapacity(System.Int32)">
+      <summary>
+            Ensures that the <see cref="!:dfList" /> has enough capacity to store <paramref name="Size" /> elements
+            </summary>
+      <param name="Size">
+      </param>
+    </member>
+    <member name="M:dfList`1.AddRange(dfList{`0})">
+      <summary>
+            Adds the elements of the specified collection to the end of the <see cref="!:dfList" /></summary>
+    </member>
+    <member name="M:dfList`1.AddRange(System.Collections.Generic.IList{`0})">
+      <summary>
+            Adds the elements of the specified collection to the end of the <see cref="!:dfList" /></summary>
+    </member>
+    <member name="M:dfList`1.AddRange(`0[])">
+      <summary>
+            Adds the elements of the specified collection to the end of the <see cref="!:dfList" /></summary>
+    </member>
+    <member name="M:dfList`1.IndexOf(`0)">
+      <summary>
+            Determines the index of a specific item in the collection
+            </summary>
+    </member>
+    <member name="M:dfList`1.Insert(System.Int32,`0)">
+      <summary>
+            Inserts an item to the collection at the specified index
+            </summary>
+      <param name="index">
+      </param>
+      <param name="item">
+      </param>
+    </member>
+    <member name="M:dfList`1.InsertRange(System.Int32,`0[])">
+      <summary>
+            Inserts an array of items at the specified index
+            </summary>
+    </member>
+    <member name="M:dfList`1.InsertRange(System.Int32,dfList{`0})">
+      <summary>
+            Inserts a collection of items at the specified index
+            </summary>
+    </member>
+    <member name="M:dfList`1.RemoveAt(System.Int32)">
+      <summary>
+            Removes the item at the specified index
+            </summary>
+    </member>
+    <member name="M:dfList`1.RemoveRange(System.Int32,System.Int32)">
+      <summary>
+            Removes <paramref name="length" /> items from the collection at the specified index
+            </summary>
+    </member>
+    <member name="M:dfList`1.Add(`0)">
+      <summary>
+            Adds an item to the collection
+            </summary>
+    </member>
+    <member name="M:dfList`1.Clear">
+      <summary>
+            Removes all items from the collection
+            </summary>
+    </member>
+    <member name="M:dfList`1.TrimExcess">
+      <summary>
+            Resizes the internal buffer to exactly match the number of elements in the collection
+            </summary>
+    </member>
+    <member name="M:dfList`1.Contains(`0)">
+      <summary>
+            Determines whether the collection contains the specified value
+            </summary>
+    </member>
+    <member name="M:dfList`1.CopyTo(`0[])">
+      <summary>
+            Copies the elements of the collection to a <see cref="T:System.Array" /> instance
+            </summary>
+      <param name="array">
+      </param>
+    </member>
+    <member name="M:dfList`1.CopyTo(`0[],System.Int32)">
+      <summary>
+            Copies the elements of the collection to an <see cref="T:System.Array" /> starting at the specified index
+            </summary>
+    </member>
+    <member name="M:dfList`1.CopyTo(System.Int32,`0[],System.Int32,System.Int32)">
+      <summary>
+            Copies the elements of the collection to an <see cref="T:System.Array" /></summary>
+      <param name="sourceIndex">The starting position in the collection</param>
+      <param name="dest">The destination array</param>
+      <param name="destIndex">The position in the array to start copying to</param>
+      <param name="length">How many elements to copy</param>
+    </member>
+    <member name="M:dfList`1.Remove(`0)">
+      <summary>
+            Removes the first occurrence of a specific object from the collection
+            </summary>
+    </member>
+    <member name="M:dfList`1.ToArray">
+      <summary>
+            Returns an array containing all elements of this collection
+            </summary>
+    </member>
+    <member name="M:dfList`1.ToArray(System.Int32,System.Int32)">
+      <summary>
+            Returns a subset of the collection's items as an array
+            </summary>
+    </member>
+    <member name="M:dfList`1.GetRange(System.Int32,System.Int32)">
+      <summary>
+            Returns a subset of the collection's items as another dfList
+            </summary>
+    </member>
+    <member name="M:dfList`1.Any(System.Func{`0,System.Boolean})">
+      <summary>
+            Returns whether any items in the collection match the condition 
+            defined by the predicate.
+            </summary>
+      <param name="predicate">A function to test each element for a condition.</param>
+      <returns>true if any elements in the source sequence pass the test in the specified
+            predicate; otherwise, false.</returns>
+    </member>
+    <member name="M:dfList`1.First">
+      <summary>
+            Returns the first element in the list. Throws an exception if the list is empty.
+            </summary>
+      <returns>
+      </returns>
+    </member>
+    <member name="M:dfList`1.FirstOrDefault">
+      <summary>
+            Returns the first element of the collection, or a default value 
+            if the collection contains no elements.
+            </summary>
+    </member>
+    <member name="M:dfList`1.FirstOrDefault(System.Func{`0,System.Boolean})">
+      <summary>
+            Returns the first element of the collection matching the condition defined by 
+            <paramref name="predicate" />, or the default value for the element type if the 
+            collection contains no elements.
+            </summary>
+    </member>
+    <member name="M:dfList`1.Last">
+      <summary>
+            Returns the last element in the list. Throws an exception if the list is empty.
+            </summary>
+    </member>
+    <member name="M:dfList`1.LastOrDefault">
+      <summary>
+            Returns the last element of the collection, or a default value 
+            if the collection contains no elements.
+            </summary>
+    </member>
+    <member name="M:dfList`1.LastOrDefault(System.Func{`0,System.Boolean})">
+      <summary>
+            Returns the last element of the collection matching the condition defined by 
+            <paramref name="predicate" />, or the default value for the element type if the 
+            collection contains no elements.
+            </summary>
+    </member>
+    <member name="M:dfList`1.Where(System.Func{`0,System.Boolean})">
+      <summary>
+            Returns a <see cref="!:dfList" /> list containing all elements
+            of the collection matching the condition specified by <paramref name="predicate" /></summary>
+    </member>
+    <member name="M:dfList`1.Matching(System.Func{`0,System.Boolean})">
+      <summary>
+            Returns the count of elements in the list that satisfy the
+            condition defined by <paramref name="predicate" /></summary>
+    </member>
+    <member name="M:dfList`1.Select``1(System.Func{`0,``0})">
+      <summary>
+            Projects each element of a sequence into a new form defined by <paramref name="selector" /></summary>
+    </member>
+    <member name="M:dfList`1.Concat(dfList{`0})">
+      <summary>
+            Returns a concatenated list containing all elements both lists
+            </summary>
+    </member>
+    <member name="M:dfList`1.Convert``1">
+      <summary>
+            Converts all elements of the list to the specified target type
+            </summary>
+    </member>
+    <member name="M:dfList`1.ForEach(System.Action{`0})">
+      <summary>
+            Performs an action on each element of the list
+            </summary>
+      <param name="action">The action to be performed on each element</param>
+    </member>
+    <member name="M:dfList`1.GetEnumerator">
+      <summary>
+            Returns an IEnumerator instance that can be used to iterate through
+            the elements in this list.
+            </summary>
+    </member>
+    <member name="M:dfList`1.Dispose">
+      <summary>
+            Releases the memory used by this object and returns it to the object pool
+            </summary>
+    </member>
+    <member name="P:dfList`1.Count">
+      <summary>
+            Returns the number of items in the list
+            </summary>
+    </member>
+    <member name="P:dfList`1.IsReadOnly">
+      <summary>
+            Gets a value indicating whether the list is read-only. Inherited from IList&lt;&gt;
+            </summary>
+    </member>
+    <member name="P:dfList`1.Item(System.Int32)">
+      <summary>
+            Gets/Sets the item at the specified index
+            </summary>
+    </member>
+    <member name="T:MouseEventHandler">
+      <summary>
+            Delegate definition for control mouse events
+            </summary>
+      <param name="control">The <see cref="T:dfControl" /> instance for which the event was generated</param>
+      <param name="mouseEvent">Contains information about the user mouse operation that triggered the event</param>
+    </member>
+    <member name="T:KeyPressHandler">
+      <summary>
+            Delegate definition for control keyboard events
+            </summary>
+      <param name="control">The <see cref="T:dfControl" /> instance for which the event was generated</param>
+      <param name="keyEvent">Contains information about the user keyboard operation that triggered the event</param>
+    </member>
+    <member name="T:DragEventHandler">
+      <summary>
+            Delegate definition for control drag and drop events
+            </summary>
+      <param name="control">The <see cref="T:dfControl" /> instance for which the event was generated</param>
+      <param name="keyEvent">Contains information about the drag and drop operation that triggered the event</param>
+    </member>
+    <member name="T:PropertyChangedEventHandler`1">
+      <summary>
+            Delegate definition for control property change events
+            </summary>
+      <typeparam name="T">The data type of the property that has changed</typeparam>
+      <param name="control">The <see cref="T:dfControl" /> instance for which the event was generated</param>
+      <param name="value">The new value of the associated property</param>
+    </member>
+    <member name="T:ChildControlEventHandler">
+      <summary>
+            Delegate definition for control hierarchy change events
+            </summary>
+      <param name="container">The <see cref="T:dfControl" /> instance for which the event was generated</param>
+      <param name="child">A reference to the child control that was added to or removed from the container</param>
+    </member>
+    <member name="T:FocusEventHandler">
+      <summary>
+            Delegate definition for control focus events
+            </summary>
+      <param name="container">The <see cref="T:dfControl" /> instance for which the event was generated</param>
+      <param name="args">Contains information about the focus change event, including a reference to which control
+            (if any) lost focus and which control (if any) obtained input focus</param>
+    </member>
+    <member name="T:dfControlEventArgs">
+      <summary>
+            Base class for all dfControl events
+            </summary>
+    </member>
+    <member name="M:dfControlEventArgs.Use">
+      <summary> 
+            Set by an event subscriber to indicate that the mouse event has been processed. 
+            If not called by an event subscriber, then the event will be "bubbled" up to the 
+            parent for additional processing.
+            </summary>
+    </member>
+    <member name="P:dfControlEventArgs.Source">
+      <summary> The dfControl instance that this event was originally generated for </summary>
+    </member>
+    <member name="P:dfControlEventArgs.Used">
+      <summary> Indicates whether this event has already been processed by an event subscriber </summary>
+    </member>
+    <member name="T:dfFocusEventArgs">
+      <summary>
+            Encapsulates information about a focus change event
+            </summary>
+    </member>
+    <member name="P:dfFocusEventArgs.GotFocus">
+      <summary>
+            The control which received input focus
+            </summary>
+    </member>
+    <member name="P:dfFocusEventArgs.LostFocus">
+      <summary>
+            The control which lost input focus
+            </summary>
+    </member>
+    <member name="T:dfDragEventArgs">
+      <summary>
+            Encapsulates information about a drag and drop operation
+            </summary>
+    </member>
+    <member name="P:dfDragEventArgs.State">
+      <summary>
+            Represents the state of the drag and drop operation
+            </summary>
+    </member>
+    <member name="P:dfDragEventArgs.Data">
+      <summary>
+            User-defined data specified by the component being dragged
+            </summary>
+    </member>
+    <member name="P:dfDragEventArgs.Position">
+      <summary>
+            The screen position (in pixels) of the current drag operation
+            </summary>
+    </member>
+    <member name="T:dfKeyEventArgs">
+      <summary>
+            Encapsulates information about a user key event
+            </summary>
+    </member>
+    <member name="M:dfKeyEventArgs.ToString">
+      <summary>
+            Returns a formatted string summarizing this object's state
+            </summary>
+    </member>
+    <member name="P:dfKeyEventArgs.KeyCode">
+      <summary>
+            The KeyCode that triggered the event
+            </summary>
+    </member>
+    <member name="P:dfKeyEventArgs.Character">
+      <summary>
+            If KeyCode represents a printable character, this property will 
+            contain the char representation of that character
+            </summary>
+    </member>
+    <member name="P:dfKeyEventArgs.Control">
+      <summary>
+            Indicates whether the CONTROL key was pressed when this event was triggered
+            </summary>
+    </member>
+    <member name="P:dfKeyEventArgs.Shift">
+      <summary>
+            Indicates whether the SHIFT key was pressed when this event was triggered
+            </summary>
+    </member>
+    <member name="P:dfKeyEventArgs.Alt">
+      <summary>
+            Indicates whether the ALT key was pressed when this event was triggered
+            </summary>
+    </member>
+    <member name="T:dfMouseEventArgs">
+      <summary>
+            Encapsulates data for the <see cref="!:MouseUp" />, 
+            <see cref="!:MouseDown" />, 
+            and <see cref="!:MouseMove" /> events.
+            </summary>
+    </member>
+    <member name="M:dfMouseEventArgs.#ctor(dfControl,dfMouseButtons,System.Int32,UnityEngine.Ray,UnityEngine.Vector2,System.Single)">
+      <summary>Initializes a new instance of the <see cref="!:MouseEventArgs" /> class.</summary>
+      <param name="Source">The <see cref="T:dfControl" /> that originally received this event notification</param>
+      <param name="button">One of the <see cref="!:MouseButtons" /> values indicating which mouse button was pressed. </param>
+      <param name="clicks">The number of times a mouse button was pressed. </param>
+      <param name="ray">The <see cref="P:dfMouseEventArgs.Ray" /> from the screen mouse location through the <paramref name="Source" /> control</param>
+      <param name="location">The screen coordinates of a mouse click, in pixels. </param>
+      <param name="wheel">A signed currentIndex of the number of detents the wheel has rotated. </param>
+    </member>
+    <member name="P:dfMouseEventArgs.Buttons">
+      <summary>Gets which mouse button was pressed.</summary>
+    </member>
+    <member name="P:dfMouseEventArgs.Clicks">
+      <summary>Gets the number of times the mouse button was pressed and released.</summary>
+    </member>
+    <member name="P:dfMouseEventArgs.WheelDelta">
+      <summary>Gets a signed currentIndex of the number of detents the mouse wheel has rotated. A detent is one notch of the mouse wheel.</summary>
+    </member>
+    <member name="P:dfMouseEventArgs.MoveDelta">
+      <summary>Returns how much the mouse was moved since the last time the mouse was polled</summary>
+    </member>
+    <member name="P:dfMouseEventArgs.Position">
+      <summary>Gets the location of the mouse during the generating mouse event.</summary>
+      <returns>A <see cref="T:UnityEngine.Vector2" /> containing the x- and y- coordinate of the mouse, in pixels, relative to the top-left corner of the screen</returns>
+    </member>
+    <member name="P:dfMouseEventArgs.Ray">
+      <summary>
+            Returns the Ray that was used to raycast during the mouse event
+            </summary>
+    </member>
+    <member name="T:dfAtlas">
+      <summary>
+            Implements a Texture Atlas (also known as a <a href="http://www.gamasutra.com/view/feature/130940/practical_texture_atlases.php" target="_blank">Sprite Sheet</a>) which will be used by <see cref="T:dfSprite" /> and derived classes
+            to display textures on-screen while requiring a minimum number of draw calls. 
+            See this <a href="http://download.nvidia.com/developer/NVTextureSuite/Atlas_Tools/Texture_Atlas_Whitepaper.pdf" target="_blank">NVIDIA whitepaper</a> for a complete overview 
+            of texture atlas use and benefits.
+            </summary>
+    </member>
+    <member name="F:dfAtlas.material">
+      <summary>
+            The Material that will be used to render any sprites rendered from this Texture Atlas
+            </summary>
+    </member>
+    <member name="F:dfAtlas.items">
+      <summary>
+            The list of sprites available in this Texture Atlas
+            </summary>
+    </member>
+    <member name="M:dfAtlas.AddItem(dfAtlas.ItemInfo)">
+      <summary>
+            Add a new sprite to the Texture Atlas
+            </summary>
+      <param name="item">The sprite data to be stored</param>
+    </member>
+    <member name="M:dfAtlas.AddItems(System.Collections.Generic.IEnumerable{dfAtlas.ItemInfo})">
+      <summary>
+            Add a collection of sprites to the Texture Atlas
+            </summary>
+      <param name="items">The sprite data to be stored</param>
+    </member>
+    <member name="M:dfAtlas.Remove(System.String)">
+      <summary>
+            Remove the named sprite from the Texture Atlas
+            </summary>
+      <param name="name">The name of the sprite to be removed</param>
+    </member>
+    <member name="M:dfAtlas.RebuildIndexes">
+      <summary>
+            Rebuilds the runtime indexes that the <see cref="T:dfAtlas" /> class
+            uses to speed up lookups.
+            </summary>
+    </member>
+    <member name="P:dfAtlas.Texture">
+      <summary>
+            The Texture2D instance containing all of the sprites in this Texture Atlas
+            </summary>
+    </member>
+    <member name="P:dfAtlas.Count">
+      <summary>
+            Returns the number of sprites available in this Texture Atlas
+            </summary>
+    </member>
+    <member name="P:dfAtlas.Item(System.String)">
+      <summary>
+            Retrieves sprite information by searching by sprite name
+            </summary>
+      <param name="key">The name of the sprite to be returned</param>
+      <returns>An ItemInfo instance representing the desired sprite, if found. NULL otherwise</returns>
+    </member>
+    <member name="T:dfAtlas.ItemInfo">
+      <summary>
+            Encapsulates the information needed to render a single sprite
+            from the Texture Atlas
+            </summary>
+    </member>
+    <member name="F:dfAtlas.ItemInfo.name">
+      <summary>
+            The name of the sprite
+            </summary>
+    </member>
+    <member name="F:dfAtlas.ItemInfo.region">
+      <summary>
+            The area within the texture atlas where the sprite can be found, specified
+            in UV coordinates
+            </summary>
+    </member>
+    <member name="F:dfAtlas.ItemInfo.border">
+      <summary>
+            Specifies the border sizes used in 9-slice scaling (May be empty)
+            </summary>
+    </member>
+    <member name="F:dfAtlas.ItemInfo.rotated">
+      <summary>
+            Will be set to true if the sprite is rotated within the texture atlas
+            </summary>
+    </member>
+    <member name="F:dfAtlas.ItemInfo.texture">
+      <summary>
+            Original sprite texture. Should not be used by consumer code, this 
+            is only retained to enable the process of rebuilding a Texture Atlas
+            and adding additional textures whenever needed without having to 
+            start over.
+            </summary>
+    </member>
+    <member name="M:dfAtlas.ItemInfo.CompareTo(dfAtlas.ItemInfo)">
+      <summary>
+            Compare this instance against another ItemInfo instance
+            </summary>
+      <param name="other">The other <see cref="T:dfAtlas.ItemInfo" /> instance to compare against</param>
+      <returns>
+      </returns>
+      <returns>
+            A signed number indicating the relative values of this instance and value: 
+            Less than zero if this instance should be sorted before <paramref name="other" />, 
+            greater than zero if this instance should be sorted after <paramref name="other" />,
+            and zero if both instances have the same sort order
+            </returns>
+    </member>
+    <member name="P:dfFont.Atlas">
+      <summary>
+            The Texture Atlas which contains the rendered font as a bitmap sprite
+            </summary>
+    </member>
+    <member name="P:dfFont.Sprite">
+      <summary>
+            The sprite which contains the per-rendered font graphics
+            </summary>
+    </member>
+    <member name="P:dfFont.IsValid">
+      <summary>
+            Returns a value indicating whether the dfFont configuration is valid
+            </summary>
+    </member>
+    <member name="P:dfFont.FontFace">
+      <summary>
+            The name of the TrueType font represented by this instance 
+            </summary>
+    </member>
+    <member name="P:dfFont.FontSize">
+      <summary>
+             The size (in pixels) of the TrueType font
+            </summary>
+    </member>
+    <member name="P:dfFont.LineHeight">
+      <summary>
+            The distance in pixels between each line of text
+            </summary>
+    </member>
+    <member name="P:dfFont.Bold">
+      <summary>
+            Indicates whether this font definition is BOLD
+            </summary>
+    </member>
+    <member name="P:dfFont.Italic">
+      <summary>
+            Indicates whether this font definition is ITALIC
+            </summary>
+    </member>
+    <member name="P:dfFont.Padding">
+      <summary>
+            The amount of padding (in pixels) surrounding each character (up, right, down, left)
+            </summary>
+    </member>
+    <member name="P:dfFont.Spacing">
+      <summary>
+            The spacing for each character (horz, vert)
+            </summary>
+    </member>
+    <member name="P:dfFont.Outline">
+      <summary>
+            The thickness (in pixels) of the outline for each character. Will be 0 if there is no outline.
+            </summary>
+    </member>
+    <member name="P:dfFont.Count">
+      <summary>
+            Returns the number of glyphs defined in this instance
+            </summary>
+    </member>
+    <member name="T:dfGUIManager">
+      <summary>
+            The dfGUIManager class is responsible for compiling all control rendering 
+            data into a Mesh and rendering that Mesh to the screen. This class is the 
+            primary workhorse of the DF-GUI library and in conjunction with <see cref="T:dfControl" />
+            forms the core of this library's functionality.
+            </summary>
+    </member>
+    <member name="M:dfGUIManager.Awake">
+      <summary>
+            Awake is called by the Unity engine when the script instance is being loaded.
+            </summary>
+    </member>
+    <member name="M:dfGUIManager.OnEnable">
+      <summary>
+            This function is called by the Unity engine when the object becomes enabled and active.
+            </summary>
+    </member>
+    <member name="M:dfGUIManager.Start">
+      <summary>
+            Start is called by the Unity engine before any of the <see cref="M:dfGUIManager.Update" /> 
+            methods is called for the first time
+            </summary>
+    </member>
+    <member name="M:dfGUIManager.OnDisable">
+      <summary>
+            This function is called by the Unity engine when the cotnrol becomes 
+            disabled or inactive.
+            </summary>
+    </member>
+    <member name="M:dfGUIManager.Update">
+      <summary>
+            Called by the Unity engine every frame if the control component is enabled
+            </summary>
+    </member>
+    <member name="M:dfGUIManager.LateUpdate">
+      <summary>
+            Called by the Unity engine every frame (after <see cref="M:dfGUIManager.Update" />) if
+            the control component is enabled
+            </summary>
+    </member>
+    <member name="M:dfGUIManager.PixelsToUnits">
+      <summary>
+            Returns a value indicating the size in 3D Units that corresponds to a single 
+            on-screen pixel, based on the current value of the FixedHeight property.
+            </summary>
+    </member>
+    <member name="M:dfGUIManager.GetClippingPlanes">
+      <summary>
+            Returns the set of clipping planes used to clip child controls.
+            Planes are specified in the following order: Left, Right, Top, Bottom
+            </summary>
+      <returns>Returns an array of <see cref="T:UnityEngine.Plane" /> that enclose the object in world coordinates</returns>
+    </member>
+    <member name="M:dfGUIManager.GetCorners(System.Single)">
+      <summary>
+            Returns an array of Vector3 values corresponding to the global 
+            positions of this object's bounding box. The corners are specified
+            in the following order: Top Left, Top Right, Bottom Right, Bottom Left
+            </summary>
+    </member>
+    <member name="M:dfGUIManager.GetScreenSize">
+      <summary>
+            Returns a <see cref="T:UnityEngine.Vector2" /> value representing the width and 
+            height of the screen. When the application is running, this value 
+            will be the correct size of the screen. When called in the Editor
+            this function will return the "design" size of the screen, which 
+            is derived from the value of the <see cref="P:dfGUIManager.FixedHeight" /> property.
+            </summary>
+      <returns>
+      </returns>
+    </member>
+    <member name="M:dfGUIManager.AddControl``1">
+      <summary>
+            Adds a new control of the specified type to the scene
+            </summary>
+      <typeparam name="T">The Type of control to create</typeparam>
+      <returns>A reference to the new <see cref="T:dfControl" />instance</returns>
+    </member>
+    <member name="M:dfGUIManager.AddControl(System.Type)">
+      <summary>
+            Adds a new control of the specified type to the scene
+            </summary>
+      <param name="type">The Type of control to create - Must derive from <see cref="T:dfControl" /></param>
+      <returns>A reference to the new <see cref="T:dfControl" />instance</returns>
+    </member>
+    <member name="M:dfGUIManager.GetDrawCallBuffer(System.Int32)">
+      <summary>
+            Returns the render data for a specific draw call
+            </summary>
+      <param name="drawCallNumber">The index of the draw call to retrieve render information for</param>
+    </member>
+    <member name="M:dfGUIManager.PushModal(dfControl,dfGUIManager.ModalPoppedCallback)">
+      <summary>
+            Push a control onto the modal control stack. When a control is modal, only that control
+            and all of its descendants will receive user input events.
+            </summary>
+      <param name="control">The control to make modal</param>
+      <param name="callback">A function that will be called when the control is popped off of the modal stack. Can be null.</param>
+    </member>
+    <member name="M:dfGUIManager.PopModal">
+      <summary>
+            Pop the current modal control from the modal control stack.
+            </summary>
+    </member>
+    <member name="M:dfGUIManager.BringToFront(dfControl)">
+      <summary>
+            Brings the control to the front so that it will display over any other control 
+            within the same container.
+            </summary>
+      <param name="control">The control instance to bring to front</param>
+    </member>
+    <member name="M:dfGUIManager.SendToBack(dfControl)">
+      <summary>
+            Brings the control to the front so that it will display behind any other control 
+            within the same container.
+            </summary>
+      <param name="control">The control instance to send to back</param>
+    </member>
+    <member name="M:dfGUIManager.Invalidate">
+      <summary>
+            Invalidates the user interface and requests a refresh, which will be performed
+            on the next frame.
+            </summary>
+    </member>
+    <member name="M:dfGUIManager.RefreshAll(System.Boolean)">
+      <summary>
+            Refresh all <see cref="!:dfGUIManager instances" /> and ensure that all <see cref="T:dfControl" />
+            instances are forced to refresh as well.
+            </summary>
+      <param name="force">Set to TRUE to force each <see cref="T:dfGUIManager" /> instance to refresh immediately</param>
+    </member>
+    <member name="M:dfGUIManager.Render">
+      <summary>
+            Rebuild the user interface mesh and update the renderer so that the UI will
+            be presented to the user on the next frame. <b>NOTE</b> : This function is
+            automatically called internally and should not be called by user code.
+            </summary>
+    </member>
+    <member name="P:dfGUIManager.TotalDrawCalls">
+      <summary>Returns the total number of draw calls required to render this <see cref="T:dfGUIManager" /> instance during the last frame </summary>
+    </member>
+    <member name="P:dfGUIManager.TotalTriangles">
+      <summary>Returns the total number of triangles this <see cref="T:dfGUIManager" /> instance rendered during the last frame </summary>
+    </member>
+    <member name="P:dfGUIManager.ControlsRendered">
+      <summary>Returns the total number of controls this <see cref="T:dfGUIManager" /> instance rendered during the last frame </summary>
+    </member>
+    <member name="P:dfGUIManager.FramesRendered">
+      <summary>Returns the total number of frames this <see cref="T:dfGUIManager" /> instance has rendered </summary>
+    </member>
+    <member name="P:dfGUIManager.ActiveControl">
+      <summary>
+            Returns a reference to the <see cref="T:dfControl" /> instance that currently has input focus
+            </summary>
+    </member>
+    <member name="P:dfGUIManager.RenderCamera">
+      <summary>
+            Returns the <see cref="T:UnityEngine.Camera" /> that is used to render 
+            the <see cref="T:dfGUIManager" /> and all of its controls
+            </summary>
+    </member>
+    <member name="P:dfGUIManager.MergeMaterials">
+      <summary>
+            Gets/Sets a value indicating whether the GUIManager should attempt
+            to consolidate drawcalls that use the same Material instance. This 
+            can reduce the number of draw calls in some cases, but depending on 
+            scene complexity may also affect control render order.
+            </summary>
+    </member>
+    <member name="P:dfGUIManager.PixelPerfectMode">
+      <summary>
+            Gets/Sets a value indicating whether controls should be resized at
+            runtime to retain the same pixel dimensions as design time. If this
+            value is set to TRUE, controls will always remain at the same pixel
+            resolution regardless of the resolution of the game. If set to FALSE,
+            controls will be scaled to fit the target resolution.
+            </summary>
+    </member>
+    <member name="P:dfGUIManager.DefaultAtlas">
+      <summary>
+            The default <see cref="T:dfAtlas">Texture Atlas</see> containing the images used
+            to render controls in this <see cref="T:dfGUIManager" />. New controls added to the
+            scene will use this Atlas by default.
+            </summary>
+    </member>
+    <member name="P:dfGUIManager.DefaultFont">
+      <summary>
+            The default <see cref="T:dfFont">Bitmapped Font</see> that will be assigned
+            to new controls added to the scene
+            </summary>
+    </member>
+    <member name="P:dfGUIManager.FixedWidth">
+      <summary>
+            Returns the width of the target screen size
+            </summary>
+    </member>
+    <member name="P:dfGUIManager.FixedHeight">
+      <summary>
+            Gets/Sets the height of the target screen size.
+            </summary>
+    </member>
+    <member name="T:dfClipboardHelper">
+      <summary>
+            Implements clipboard copy/paste functionality in standalone and web player
+            deployment targets. <b>NOTE:</b> Because Unity does not provide access to
+            this functionality, this class uses reflection to obtain access to private
+            members of the GUIUtility class, and may not continue to work in future 
+            version of Unity.
+            </summary>
+    </member>
+    <member name="M:dfStringExtensions.MakeRelativePath(System.String)">
+      <summary>
+            Makes a file path relative to the Unity project's path
+            </summary>
+    </member>
+    <member name="M:dfStringExtensions.Contains(System.String,System.String,System.Boolean)">
+      <summary>
+            Returns a value indicating whether the specified string pattern occurs
+            within this string.
+            </summary>
+      <param name="pattern">
+      </param>
+      <param name="caseInsensitive">
+      </param>
+      <returns>
+      </returns>
+    </member>
+    <member name="M:dfFloatExtensions.Quantize(System.Single,System.Single)">
+      <summary>
+            Restricts the value to a discrete multiple of the value in the <value>quantum</value> parameter
+            </summary>
+    </member>
+    <member name="M:dfFloatExtensions.RoundToNearest(System.Single,System.Single)">
+      <summary>
+            Restricts the value to a discrete multiple of the value in the <value>quantum</value> parameter
+            </summary>
+    </member>
+    <member name="M:VectorExtensions.Quantize(UnityEngine.Vector2,System.Single)">
+      <summary>
+            Restricts the values in the Vector2 to a discrete multiple of 
+            the value in the <paramref name="discreteValue" /> parameter. 
+            </summary>
+    </member>
+    <member name="M:VectorExtensions.Quantize(UnityEngine.Vector3,System.Single)">
+      <summary>
+            Restricts the values in the Vector2 to a discrete multiple of 
+            the value in the <paramref name="discreteValue" /> parameter. 
+            </summary>
+    </member>
+    <member name="M:RectExtensions.IsEmpty(UnityEngine.Rect)">
+      <summary>
+            Returns a value indicating whether a Rect is empty (has no volume)
+            </summary>
+    </member>
+    <member name="M:RectExtensions.Intersection(UnityEngine.Rect,UnityEngine.Rect)">
+      <summary>
+            Returns the intersection of two Rect objects
+            </summary>
+    </member>
+    <member name="M:RectExtensions.Union(UnityEngine.Rect,UnityEngine.Rect)">
+      <summary>
+            Returns the Union of two Rects
+            </summary>
+    </member>
+    <member name="M:RectExtensions.Contains(UnityEngine.Rect,UnityEngine.Rect)">
+      <summary>
+            Returns a value indicating whether the Rect defined by <paramref name="other" />
+            is fully contained within the source Rect.
+            </summary>
+    </member>
+    <member name="M:RectExtensions.Intersects(UnityEngine.Rect,UnityEngine.Rect)">
+      <summary>
+            Returns a value indicating whether two Rect objects are overlapping
+            </summary>
+    </member>
+    <member name="M:ReflectionExtensions.GetAllFields(System.Type)">
+      <summary>
+            Returns all instance fields on an object, including inherited fields
+            </summary>
+    </member>
+    <member name="T:dfClippingUtil">
+      <summary>
+            Provides triangle clipping functionality for the <see cref="T:dfGUIManager" /> class
+            </summary>
+    </member>
+    <member name="M:dfClippingUtil.Clip(System.Collections.Generic.IList{UnityEngine.Plane},dfRenderData,dfRenderData)">
+      <summary>
+            Clips a <see cref="T:dfRenderData" /> instance containing control rendering data
+            against a list of <see cref="T:UnityEngine.Plane" /> objects defined by the current clipping 
+            region, and outputs the clipped data into <paramref name="dest" /></summary>
+      <param name="planes">The list of planes to clip against</param>
+      <param name="source">The control rendering data to be clipped</param>
+      <param name="dest">The output buffer that will hold the resulting clipped data</param>
+    </member>
+    <member name="T:dfButton">
+      <summary>
+            Provides a basic Button implementation that allows the developer
+            to specify individual sprite images to be used to represent common 
+            button states.
+            </summary>
+    </member>
+    <member name="T:dfInteractiveBase">
+      <summary>
+            Base class for controls which can be selected or have input focus and 
+            which can be configured to display a different Sprite for each state
+            </summary>
+    </member>
+    <member name="P:dfInteractiveBase.Atlas">
+      <summary>
+            The <see cref="T:dfAtlas">Texture Atlas</see> containing the images used by this control
+            </summary>
+    </member>
+    <member name="P:dfInteractiveBase.BackgroundSprite">
+      <summary>
+            The name of the image in the <see cref="P:dfInteractiveBase.Atlas" /> that will be used to 
+            render the background of this control in its Default state
+            </summary>
+    </member>
+    <member name="P:dfInteractiveBase.DisabledSprite">
+      <summary>
+            The name of the image in the <see cref="P:dfInteractiveBase.Atlas" /> that will be used
+            to render the background of this control in its Disabled state
+            </summary>
+    </member>
+    <member name="P:dfInteractiveBase.FocusSprite">
+      <summary>
+            The name of the image in the <see cref="P:dfInteractiveBase.Atlas" /> that will be used
+            to render the background of this control in its Focused state
+            </summary>
+    </member>
+    <member name="P:dfInteractiveBase.HoverSprite">
+      <summary>
+            The name of the image in the <see cref="P:dfInteractiveBase.Atlas" /> that will be used
+            to render the background of this control in its Hover state
+            </summary>
+    </member>
+    <member name="P:dfInteractiveBase.CanFocus">
+      <summary>
+            Gets a value indicating whether the control can receive focus.
+            </summary>
+    </member>
+    <member name="E:dfButton.ButtonStateChanged">
+      <summary>
+            Raised whenever the button's State property changes
+            </summary>
+    </member>
+    <member name="P:dfButton.State">
+      <summary>
+            Gets or sets the button's current ButtonState value
+            </summary>
+    </member>
+    <member name="P:dfButton.PressedSprite">
+      <summary>
+            Gets or sets the name of the sprite that will be displayed when 
+            the button date is set to <see cref="F:dfButton.ButtonState.Pressed" /></summary>
+    </member>
+    <member name="P:dfButton.ButtonGroup">
+      <summary>
+            If set, only one Button attached to the indicated dfControl
+            can have its State property set to <see cref="F:dfButton.ButtonState.Pressed" /> 
+            at a time. This is used to emulate Toolbar and TabStrip 
+            functionality.
+            </summary>
+    </member>
+    <member name="P:dfButton.AutoSize">
+      <summary>
+            If set to TRUE, the <see cref="T:dfButton" /> will be automatically sized to 
+            fit the <see cref="P:dfButton.Text" /></summary>
+    </member>
+    <member name="P:dfButton.TextAlignment">
+      <summary>
+            Gets or sets the text alignment that will be used to render the 
+            button's caption: Left, Right, or Centered
+            </summary>
+    </member>
+    <member name="P:dfButton.Padding">
+      <summary>
+            Gets or sets the amount of padding that will be used when rendering 
+            the button's caption when the <see cref="P:dfButton.AutoSize" /> property is set
+            to TRUE.
+            </summary>
+    </member>
+    <member name="P:dfButton.Font">
+      <summary>
+            Gets or sets the <see cref="T:dfFont" /> instance that will be used 
+            to render the button's caption
+            </summary>
+    </member>
+    <member name="P:dfButton.Text">
+      <summary>
+            Gets or sets the button's caption text
+            </summary>
+    </member>
+    <member name="P:dfButton.TextColor">
+      <summary>
+            Gets or sets the Color that will be used when rendering the 
+            button's caption
+            </summary>
+    </member>
+    <member name="P:dfButton.TextScale">
+      <summary>
+            Gets or sets the size multiplier that will be used when rendering
+            the button's caption
+            </summary>
+    </member>
+    <member name="P:dfButton.Shadow">
+      <summary>
+            Gets or sets whether the button's caption will be rendered with 
+            a shadow
+            </summary>
+    </member>
+    <member name="P:dfButton.ShadowColor">
+      <summary>
+            Gets or sets the color that will be used to render the caption's shadow
+            if the <see cref="P:dfButton.Shadow" /> property is set to TRUE
+            </summary>
+    </member>
+    <member name="P:dfButton.ShadowOffset">
+      <summary>
+            Gets or sets the distance in pixels that the caption's shadow will 
+            be offset if the <see cref="P:dfButton.Shadow" /> property is set to TRUE
+            </summary>
+    </member>
+    <member name="T:dfButton.ButtonState">
+      <summary>
+            Represents the state of a Button
+            </summary>
+    </member>
+    <member name="F:dfButton.ButtonState.Default">
+      <summary>
+            The default state of the button
+            </summary>
+    </member>
+    <member name="F:dfButton.ButtonState.Focus">
+      <summary>
+            Indicates that the button is active, i.e. has input focus or is 
+            the selected button in a group
+            </summary>
+    </member>
+    <member name="F:dfButton.ButtonState.Hover">
+      <summary>
+            Indicates that the mouse is hovering over the control
+            </summary>
+    </member>
+    <member name="F:dfButton.ButtonState.Pressed">
+      <summary>
+            Indicates that the user has pressed the button
+            </summary>
+    </member>
+    <member name="F:dfButton.ButtonState.Disabled">
+      <summary>
+            Indicates that the control is disabled and cannot respond to
+            user events
+            </summary>
+    </member>
+    <member name="T:dfCheckbox">
+      <summary>
+            Implements a standard checkbox (or toggle) control
+            </summary>
+    </member>
+    <member name="P:dfCheckbox.IsChecked">
+      <summary>
+            Gets or sets whether the checkbox is checked
+            </summary>
+    </member>
+    <member name="P:dfCheckbox.CheckIcon">
+      <summary>
+            Gets/Sets a reference to the dfControl used to display the checkmark icon
+            </summary>
+    </member>
+    <member name="P:dfCheckbox.Label">
+      <summary>
+            The dfLabel control responsible for displaying this dfCheckbox's 
+            Text property
+            </summary>
+    </member>
+    <member name="P:dfCheckbox.GroupContainer">
+      <summary>
+            If set, only one dfCheckbox attached to the indicated dfControl
+            can have it's IsChecked property set at a time. This is used
+            to simulate RadioButton functionality
+            </summary>
+    </member>
+    <member name="P:dfCheckbox.Text">
+      <summary>
+            The text to display on the dfCheckbox label
+            </summary>
+    </member>
+    <member name="P:dfCheckbox.CanFocus">
+      <summary>
+            Gets a value indicating whether the control can receive focus.
+            </summary>
+    </member>
+    <member name="T:dfDragHandle">
+      <summary>
+            Allows the user to use the mouse to move the dfControl that contains 
+            this dfDragHandle instance
+            </summary>
+    </member>
+    <member name="T:dfDropdown">
+      <summary>
+            Implements a drop-down list control
+            </summary>
+    </member>
+    <member name="M:dfDropdown.AddItem(System.String)">
+      <summary>
+            Adds a new value to the collection of list items
+            </summary>
+      <param name="item">
+      </param>
+    </member>
+    <member name="E:dfDropdown.DropdownOpen">
+      <summary>
+            Occurs when the drop-down list is displayed
+            </summary>
+    </member>
+    <member name="E:dfDropdown.DropdownClose">
+      <summary>
+            Occurs when the drop-down list is closed
+            </summary>
+    </member>
+    <member name="E:dfDropdown.SelectedIndexChanged">
+      <summary>
+            Occurs when the value of the SelectedIndex property changes
+            </summary>
+    </member>
+    <member name="P:dfDropdown.Font">
+      <summary>
+            Gets or sets the <see cref="T:dfFont" /> instance that will be used 
+            to render the list items
+            </summary>
+    </member>
+    <member name="P:dfDropdown.ListScrollbar">
+      <summary>
+            Gets or sets a reference to a <see cref="!:Scrollbar" /> prefab that will
+            be attached to the popup list
+            </summary>
+    </member>
+    <member name="P:dfDropdown.ListOffset">
+      <summary>
+            Gets or sets the amount of space in pixels that the list will be 
+            offset from the default display position
+            </summary>
+    </member>
+    <member name="P:dfDropdown.ListBackground">
+      <summary>
+            Gets or sets the name of the sprite that will be used to 
+            render the background image of the control
+            </summary>
+    </member>
+    <member name="P:dfDropdown.ItemHover">
+      <summary>
+            Gets or sets the name of the sprite that will be used to render the 
+            background of the list item that the mouse is hovering over
+            </summary>
+    </member>
+    <member name="P:dfDropdown.ItemHighlight">
+      <summary>
+            Gets or sets the name of the sprite that will be used to render the 
+            background of the list item that is currently selected
+            </summary>
+    </member>
+    <member name="P:dfDropdown.SelectedValue">
+      <summary>
+            Gets or sets the value of the currently selected list item
+            </summary>
+    </member>
+    <member name="P:dfDropdown.SelectedIndex">
+      <summary>
+            Gets or sets the index of the currently selected list item
+            </summary>
+    </member>
+    <member name="P:dfDropdown.TextFieldPadding">
+      <summary>
+            Gets or sets the amount of padding to use when rendering the 
+            text in the text field
+            </summary>
+    </member>
+    <member name="P:dfDropdown.TextColor">
+      <summary>
+            Gets or sets the color that will be used to render any text items
+            </summary>
+    </member>
+    <member name="P:dfDropdown.TextScale">
+      <summary>
+            Gets or sets the size multiplier that will be used when rendering
+            any text items
+            </summary>
+    </member>
+    <member name="P:dfDropdown.ItemHeight">
+      <summary>
+            Gets or sets the height in pixels of a list item
+            </summary>
+    </member>
+    <member name="P:dfDropdown.Items">
+      <summary>
+            Gets or sets the collection of values that will be displayed in the list
+            </summary>
+    </member>
+    <member name="P:dfDropdown.ListPadding">
+      <summary>
+            Gets or sets the amount of padding that will be used when 
+            rendering the popup list
+            </summary>
+    </member>
+    <member name="P:dfDropdown.ListPosition">
+      <summary>
+            A <see cref="T:dfDropdown.PopupListPosition" /> value indicating whether the pop-up
+            list will appear below or above this control
+            </summary>
+    </member>
+    <member name="P:dfDropdown.MaxListWidth">
+      <summary>
+            Gets or sets the maximum width of the popup list
+            </summary>
+    </member>
+    <member name="P:dfDropdown.MaxListHeight">
+      <summary>
+            Gets or sets the maximum height of the popup list. If the list 
+            contains more items than can be displayed within this size, it
+            will be scrollable.
+            </summary>
+    </member>
+    <member name="P:dfDropdown.TriggerButton">
+      <summary>
+            Gets or sets a reference to a control that, when clicked by the user,
+            will cause the popup list to be displayed
+            </summary>
+    </member>
+    <member name="P:dfDropdown.Shadow">
+      <summary>
+            Gets or sets whether text items will be rendered with a shadow
+            </summary>
+    </member>
+    <member name="P:dfDropdown.ShadowColor">
+      <summary>
+            Gets or sets the color that will be used when rendering the shadow
+            for text if the <see cref="P:dfDropdown.Shadow" /> property is set to TRUE
+            </summary>
+    </member>
+    <member name="P:dfDropdown.ShadowOffset">
+      <summary>
+            Gets or sets the distance in pixels that a text item's shadow will 
+            be offset if the <see cref="P:dfDropdown.Shadow" /> property is set to TRUE
+            </summary>
+    </member>
+    <member name="T:dfDropdown.PopupListPosition">
+      <summary>
+            Specifies whether the pop-up list will appear under or over the
+            <see cref="!:SimpleDropdown" /> or whether the position wil be
+            determined automatically
+            </summary>
+    </member>
+    <member name="F:dfDropdown.PopupListPosition.Below">
+      <summary>
+            The pop-up list will appear below the <see cref="!:SimpleDropdown" /> control
+            </summary>
+    </member>
+    <member name="F:dfDropdown.PopupListPosition.Above">
+      <summary>
+            The pop-up list will appear above the <see cref="!:SimpleDropdown" /> control
+            </summary>
+    </member>
+    <member name="F:dfDropdown.PopupListPosition.Automatic">
+      <summary>
+            The position of the pop-up list will be automatically determined
+            </summary>
+    </member>
+    <member name="T:dfDropdown.PopupEventHandler">
+      <summary>
+            Specifies the method signature required to process the DropdownOpen and DropdownClose events
+            </summary>
+      <param name="dropdown">A reference the the dfDropdown instance sending the event</param>
+      <param name="popup">A reference to the dfListbox instance that will be displayed</param>
+      <param name="overridden">Can be set to TRUE by the event subscriber to override the standard show/hide functionality</param>
+    </member>
+    <member name="T:dfLabel">
+      <summary>
+            Used to display text information on the screen
+            </summary>
+    </member>
+    <member name="E:dfLabel.TextChanged">
+      <summary>
+            Raised whenever the value of the <see cref="P:dfLabel.Text" /> property changes
+            </summary>
+    </member>
+    <member name="P:dfLabel.Atlas">
+      <summary>
+            The <see cref="T:dfAtlas">Texture Atlas</see> containing the images used by 
+            the <see cref="P:dfLabel.Font" /></summary>
+    </member>
+    <member name="P:dfLabel.Font">
+      <summary>
+            Gets or sets the <see cref="T:dfFont" /> instance that will be used 
+            to render the text
+            </summary>
+    </member>
+    <member name="P:dfLabel.BackgroundSprite">
+      <summary>
+            The name of the image in the <see cref="P:dfLabel.Atlas" /> that will be used to 
+            render the background of this control
+            </summary>
+    </member>
+    <member name="P:dfLabel.TextScale">
+      <summary>
+            Gets or sets the size multiplier that will be used to render text
+            </summary>
+    </member>
+    <member name="P:dfLabel.CharacterSpacing">
+      <summary>
+            Gets or sets the amount of additional spacing (in pixels) that will 
+            be applied when rendering the text
+            </summary>
+    </member>
+    <member name="P:dfLabel.ColorizeSymbols">
+      <summary>
+            Gets/Sets a value indicating whether symbols (sprites embedded in the 
+            text) should be colorized
+            </summary>
+    </member>
+    <member name="P:dfLabel.ProcessMarkup">
+      <summary>
+            Gets/Sets a value indicating whether embedded markup codes are processed
+            </summary>
+    </member>
+    <member name="P:dfLabel.Text">
+      <summary>
+            Gets or sets the value of the text that will be rendered
+            </summary>
+    </member>
+    <member name="P:dfLabel.AutoSize">
+      <summary>
+            Gets or sets whether the <see cref="T:dfLabel" /> control will be automatically
+            resized to contain the rendered text.
+            </summary>
+    </member>
+    <member name="P:dfLabel.AutoHeight">
+      <summary>
+            Gets or sets whether the <see cref="T:dfLabel" /> control will be automatically
+            resized vertically to contain the rendered text.
+            </summary>
+    </member>
+    <member name="P:dfLabel.WordWrap">
+      <summary>
+            Gets or sets whether Word Wrap should be used when rendering the text.
+            </summary>
+    </member>
+    <member name="P:dfLabel.TextAlignment">
+      <summary>
+            Gets or sets the type of text alignment to use when rendering the text
+            </summary>
+    </member>
+    <member name="P:dfLabel.Shadow">
+      <summary>
+            Gets or sets whether the text should be rendered with a shadow effect
+            </summary>
+    </member>
+    <member name="P:dfLabel.ShadowColor">
+      <summary>
+            Gets or sets the color of the shadow that will be rendered if the <see cref="P:dfLabel.Shadow" />
+            property is set to TRUE
+            </summary>
+    </member>
+    <member name="P:dfLabel.ShadowOffset">
+      <summary>
+            Gets or sets the distance that the shadow that will be offset if the <see cref="P:dfLabel.Shadow" />
+            property is set to TRUE
+            </summary>
+    </member>
+    <member name="P:dfLabel.Padding">
+      <summary>
+            Gets or sets the amount of padding that will be added to the control's borders 
+            when rendering the text
+            </summary>
+    </member>
+    <member name="P:dfLabel.TabSize">
+      <summary>
+            The width (in pixels) of a tab character embedded in the <see cref="P:dfLabel.Text" /></summary>
+    </member>
+    <member name="P:dfLabel.TabStops">
+      <summary>
+            Returns the list of tab stop positions
+            </summary>
+    </member>
+    <member name="T:dfListbox">
+      <summary>
+            Allows the user to select from a list of options
+            </summary>
+    </member>
+    <member name="M:dfListbox.EnsureVisible(System.Int32)">
+      <summary>
+            Ensures that the list item at the specified index will be 
+            visible to the user
+            </summary>
+      <param name="index">The index of the list item to make visible</param>
+    </member>
+    <member name="E:dfListbox.SelectedIndexChanged">
+      <summary>
+            Raised whenever the SelectedIndex property's value is changed
+            </summary>
+    </member>
+    <member name="E:dfListbox.ItemClicked">
+      <summary>
+            Raised whenever the user clicks with the left mouse button on 
+            any item in the list
+            </summary>
+    </member>
+    <member name="P:dfListbox.Font">
+      <summary>
+            Gets or sets the <see cref="T:dfFont" /> instance that will be used 
+            to render list items
+            </summary>
+    </member>
+    <member name="P:dfListbox.ScrollPosition">
+      <summary>
+            Gets or sets the scroll position of the list
+            </summary>
+    </member>
+    <member name="P:dfListbox.ItemHighlight">
+      <summary>
+            Gets or sets the name of the sprite that will be used to render
+            the background of the selected list item
+            </summary>
+    </member>
+    <member name="P:dfListbox.ItemHover">
+      <summary>
+            Gets or sets the name of the sprite that will be used to render 
+            the background of the list item under the mouse
+            </summary>
+    </member>
+    <member name="P:dfListbox.SelectedIndex">
+      <summary>
+            Gets or sets the index of the currently selected list item
+            </summary>
+    </member>
+    <member name="P:dfListbox.ItemPadding">
+      <summary>
+            Gets or sets the amount of padding that will be applied when 
+            rendering each list item
+            </summary>
+    </member>
+    <member name="P:dfListbox.ItemTextColor">
+      <summary>
+            Gets or sets the color that will be used to render each list item
+            </summary>
+    </member>
+    <member name="P:dfListbox.ItemTextScale">
+      <summary>
+            Gets or sets the size multiplier that will be used when rendering 
+            each list item
+            </summary>
+    </member>
+    <member name="P:dfListbox.ItemHeight">
+      <summary>
+            Gets or sets the height (in pixels) of each list item
+            </summary>
+    </member>
+    <member name="P:dfListbox.Items">
+      <summary>
+            Gets or sets the collection of string values that will be displayed in the list
+            </summary>
+    </member>
+    <member name="P:dfListbox.Scrollbar">
+      <summary>
+            Gets or sets the scrollbar that will be used to scroll the list
+            </summary>
+    </member>
+    <member name="P:dfListbox.ListPadding">
+      <summary>
+            Gets or sets the amount of padding that will be applied to the control's 
+            borders when rendering the collection of list items
+            </summary>
+    </member>
+    <member name="P:dfListbox.Shadow">
+      <summary>
+            Gets or sets whether a shadow will be rendered for each list item
+            </summary>
+    </member>
+    <member name="P:dfListbox.ShadowColor">
+      <summary>
+            Gets or sets the color of the shadow that will be rendered for each 
+            list item if the <see cref="P:dfListbox.Shadow" /> property is set to TRUE
+            </summary>
+    </member>
+    <member name="P:dfListbox.ShadowOffset">
+      <summary>
+            Gets or sets the distance that the shadow will be offset for each list
+            item if the <see cref="P:dfListbox.Shadow" /> property is set to TRUE
+            </summary>
+    </member>
+    <member name="P:dfListbox.AnimateHover">
+      <summary>
+            Gets or sets whether the mouse hover indicator will be animated
+            </summary>
+    </member>
+    <member name="T:dfPanel">
+      <summary>
+            Basic container control to facilitate user interface layout
+            </summary>
+    </member>
+    <member name="P:dfPanel.Atlas">
+      <summary>
+            The <see cref="T:dfAtlas">Texture Atlas</see> containing the images used by this control
+            </summary>
+    </member>
+    <member name="P:dfPanel.BackgroundSprite">
+      <summary>
+            The name of the image in the <see cref="P:dfPanel.Atlas" /> that will be used to 
+            render the background of this control
+            </summary>
+    </member>
+    <member name="P:dfPanel.Padding">
+      <summary>
+            Gets/Sets the amount of padding to add to the client region. 
+            </summary>
+    </member>
+    <member name="T:dfProgressBar">
+      <summary>
+            Implements a determinate progress bar that can be used to display
+            the progress from a start value toward an end value, such as the
+            amount of work completed or a player's progress toward some goal, etc.
+            </summary>
+    </member>
+    <member name="P:dfProgressBar.Atlas">
+      <summary>
+            The <see cref="T:dfAtlas">Texture Atlas</see> containing the images used by this control
+            </summary>
+    </member>
+    <member name="P:dfProgressBar.BackgroundSprite">
+      <summary>
+            The name of the image in the <see cref="P:dfProgressBar.Atlas" /> that will be used to 
+            render the background of this control
+            </summary>
+    </member>
+    <member name="P:dfProgressBar.ProgressSprite">
+      <summary>
+            The name of the image in the <see cref="P:dfProgressBar.Atlas" /> that will be used to 
+            render the progress indicator of this control
+            </summary>
+    </member>
+    <member name="P:dfProgressBar.MinValue">
+      <summary>
+            Gets or sets the lower limit of the range of values this progress bar can return
+            </summary>
+    </member>
+    <member name="P:dfProgressBar.MaxValue">
+      <summary>
+            Gets or sets the upper limit of the range of values this progress bar can return
+            </summary>
+    </member>
+    <member name="P:dfProgressBar.Value">
+      <summary>
+            Gets or sets a numeric value that represents the current progress value
+            </summary>
+    </member>
+    <member name="P:dfProgressBar.FillMode">
+      <summary>
+            Indicates whether the progress indicator will be rendered via a stretched 
+            sprite or a filled sprite
+            </summary>
+    </member>
+    <member name="P:dfProgressBar.Padding">
+      <summary>
+            Gets or sets the amount of padding that will be applied to when
+            rendering the progress indicator
+            </summary>
+    </member>
+    <member name="P:dfProgressBar.ActAsSlider">
+      <summary>
+            If set to TRUE, this <see cref="!:ProgressBar" /> will act as a <see cref="T:dfSlider" />
+            control, responding to user input with the mouse and keyboard. This allows the 
+            developer to create a basic slider control with minimal setup compared to the 
+            <see cref="T:dfSlider" /> class.
+            </summary>
+    </member>
+    <member name="T:dfRadialSprite">
+      <summary>
+            Implements a <see cref="T:dfSprite" /> class that displays an image
+            from a Texture Atlas on the screen, but can be filled in a radial 
+            fashion instead of strictly horizontally or vertically like other
+            sprite classes. Useful for spell cooldown effects, map effects, etc.
+            </summary>
+    </member>
+    <member name="T:dfSprite">
+      <summary>
+            Used to render a sprite from a Texture Atlas on the screen
+            </summary>
+    </member>
+    <member name="M:dfSprite.ToString">
+      <summary>
+            Returns a formatted string summarizing this object's state
+            </summary>
+    </member>
+    <member name="E:dfSprite.SpriteNameChanged">
+      <summary>
+            Raised when the value of the <see cref="P:dfSprite.SpriteName" /> property has changed
+            </summary>
+    </member>
+    <member name="P:dfSprite.Atlas">
+      <summary>
+            The <see cref="T:dfAtlas">Texture Atlas</see> containing the images used by this control
+            </summary>
+    </member>
+    <member name="P:dfSprite.SpriteName">
+      <summary>
+            The name of a sprite in the <see cref="P:dfSprite.Atlas" /> that will be rendered
+            </summary>
+    </member>
+    <member name="P:dfSprite.SpriteInfo">
+      <summary>
+            Returns the ItemInfo structure containing the sprite information 
+            for the sprite indicated by the <see cref="P:dfSprite.SpriteName" /> property
+            </summary>
+    </member>
+    <member name="P:dfSprite.Flip">
+      <summary>
+            Gets or sets which axes will be flipped when rendering the sprite
+            </summary>
+    </member>
+    <member name="P:dfSprite.FillDirection">
+      <summary>
+            Gets or sets which direction will be used for a fill operation 
+            during rendering
+            </summary>
+    </member>
+    <member name="P:dfSprite.FillAmount">
+      <summary>
+            The amount (from 0.0 to 1.0) of the sprite's surface to be filled
+            </summary>
+    </member>
+    <member name="P:dfSprite.InvertFill">
+      <summary>
+            If set to TRUE, will invert the fill direction
+            </summary>
+    </member>
+    <member name="P:dfRadialSprite.FillOrigin">
+      <summary>
+            Specifies the anchor point from which the radial fill will originate
+            </summary>
+    </member>
+    <member name="T:dfResizeHandle">
+      <summary>
+            Allows the user to use the mouse to resize the dfControl that contains 
+            this dfResizeHandle instance.
+            </summary>
+    </member>
+    <member name="P:dfResizeHandle.Atlas">
+      <summary>
+            The <see cref="T:dfAtlas">Texture Atlas</see> containing the images used by this control
+            </summary>
+    </member>
+    <member name="P:dfResizeHandle.BackgroundSprite">
+      <summary>
+            The name of the image in the <see cref="P:dfResizeHandle.Atlas" /> that will be used to 
+            render the background of this control
+            </summary>
+    </member>
+    <member name="P:dfResizeHandle.Edges">
+      <summary>
+            Defines which edges of the parent control are moved
+            by dragging the <see cref="T:dfResizeHandle" /></summary>
+    </member>
+    <member name="T:dfResizeHandle.ResizeEdge">
+      <summary>
+            Defines which edges of the parent control are moved
+            by dragging the <see cref="T:dfResizeHandle" /></summary>
+    </member>
+    <member name="F:dfResizeHandle.ResizeEdge.None">
+      <summary>
+            The parent control is not resized
+            </summary>
+    </member>
+    <member name="F:dfResizeHandle.ResizeEdge.Left">
+      <summary>
+            Dragging the <see cref="T:dfResizeHandle" /> object horizontally
+            moves the parent control's Left edge
+            </summary>
+    </member>
+    <member name="F:dfResizeHandle.ResizeEdge.Right">
+      <summary>
+            Dragging the <see cref="T:dfResizeHandle" /> object horizontally
+            moves the parent control's Right edge
+            </summary>
+    </member>
+    <member name="F:dfResizeHandle.ResizeEdge.Top">
+      <summary>
+            Dragging the <see cref="T:dfResizeHandle" /> object horizontally
+            moves the parent control's Top edge
+            </summary>
+    </member>
+    <member name="F:dfResizeHandle.ResizeEdge.Bottom">
+      <summary>
+            Dragging the <see cref="T:dfResizeHandle" /> object horizontally
+            moves the parent control's Bottom edge
+            </summary>
+    </member>
+    <member name="T:dfScrollPanel">
+      <summary>
+            Implements a scrollable control container
+            </summary>
+    </member>
+    <member name="M:dfScrollPanel.ScrollToTop">
+      <summary>
+            Sets the scrollposition to the top
+            </summary>
+    </member>
+    <member name="M:dfScrollPanel.ScrollToBottom">
+      <summary>
+            Sets the scrollposition to the top
+            </summary>
+    </member>
+    <member name="M:dfScrollPanel.ScrollToLeft">
+      <summary>
+            Sets the scrollposition to the top
+            </summary>
+    </member>
+    <member name="M:dfScrollPanel.ScrollToRight">
+      <summary>
+            Sets the scrollposition to the top
+            </summary>
+    </member>
+    <member name="M:dfScrollPanel.ScrollIntoView(dfControl)">
+      <summary>
+            Scrolls the specified child control into view
+            </summary>
+      <param name="control">The child control to scroll into view</param>
+    </member>
+    <member name="M:dfScrollPanel.Reset">
+      <summary>
+            Reset the viewport back to the upper left origin of the scrollable area
+            </summary>
+    </member>
+    <member name="P:dfScrollPanel.ScrollWithArrowKeys">
+      <summary>
+            Set to TRUE if you want the <see cref="!:ScrollPanel" /> to scroll when the 
+            user presses the arrow keys.
+            </summary>
+    </member>
+    <member name="P:dfScrollPanel.Atlas">
+      <summary>
+            The <see cref="T:dfAtlas">Texture Atlas</see> containing the images used by this control
+            </summary>
+    </member>
+    <member name="P:dfScrollPanel.BackgroundSprite">
+      <summary>
+            The name of the image in the <see cref="P:dfScrollPanel.Atlas" /> that will be used to 
+            render the background of this control
+            </summary>
+    </member>
+    <member name="P:dfScrollPanel.AutoReset">
+      <summary>
+            Gets or sets whether the <see cref="T:dfScrollPanel" /> will automatically
+            reset the scrolling region
+            </summary>
+    </member>
+    <member name="P:dfScrollPanel.ScrollPadding">
+      <summary>
+            Gets or sets the amount of padding that will be applied when arranging 
+            child controls if the <see cref="P:dfScrollPanel.AutoLayout" /> property is set to TRUE
+            </summary>
+    </member>
+    <member name="P:dfScrollPanel.AutoLayout">
+      <summary>
+            Gets or sets whether child controls will be automatically arranged
+            </summary>
+    </member>
+    <member name="P:dfScrollPanel.WrapLayout">
+      <summary>
+            Gets or sets whether controls that lie outside of this container's 
+            boundaries will be "wrapped" to the next row or column when using AutoLayout
+            </summary>
+    </member>
+    <member name="P:dfScrollPanel.FlowDirection">
+      <summary>
+            Gets or sets the direction in which child controls will be arranged
+            when using AutoLayout
+            </summary>
+    </member>
+    <member name="P:dfScrollPanel.FlowPadding">
+      <summary>
+            Gets or sets the amount of padding that will be applied to each control
+            when arranging child controls using AutoLayout
+            </summary>
+    </member>
+    <member name="P:dfScrollPanel.ScrollPosition">
+      <summary>
+            Gets or sets the upper-left position of the viewport relative
+            to the entire scrollable area
+            </summary>
+    </member>
+    <member name="P:dfScrollPanel.HorzScrollbar">
+      <summary>
+            Gets or sets a reference the the <see cref="!:dfScrollBar" /> instance
+            that is used to scroll this container horizontally
+            </summary>
+    </member>
+    <member name="P:dfScrollPanel.VertScrollbar">
+      <summary>
+            Gets or sets a reference the the <see cref="!:dfScrollBar" /> instance
+            that is used to scroll this container vertically
+            </summary>
+    </member>
+    <member name="P:dfScrollPanel.WheelScrollDirection">
+      <summary>
+            Indicates the direction to scroll when the user scrolls the mouse wheel
+            </summary>
+    </member>
+    <member name="T:dfScrollPanel.LayoutDirection">
+      <summary>
+            Specifies the direction to arrange controls when flow layout is used 
+            </summary>
+    </member>
+    <member name="F:dfScrollPanel.LayoutDirection.Horizontal">
+      <summary>
+            Controls will be arranged horizontally
+            </summary>
+    </member>
+    <member name="F:dfScrollPanel.LayoutDirection.Vertical">
+      <summary>
+            Controls will be arranged vertically
+            </summary>
+    </member>
+    <member name="T:dfScrollbar">
+      <summary>
+            Implements a common Scrollbar control
+            </summary>
+    </member>
+    <member name="E:dfScrollbar.ValueChanged">
+      <summary>
+            Raised when the value of the <see cref="P:dfScrollbar.Value" /> property has changed
+            </summary>
+    </member>
+    <member name="P:dfScrollbar.Atlas">
+      <summary>
+            The <see cref="T:dfAtlas">Texture Atlas</see> containing the images used by this control
+            </summary>
+    </member>
+    <member name="P:dfScrollbar.MinValue">
+      <summary>
+            Gets/Sets the lower limit of the range of values this Scrollbar can return
+            </summary>
+    </member>
+    <member name="P:dfScrollbar.MaxValue">
+      <summary>
+            Gets/Sets the upper limit of the range of values this Scrollbar can return
+            </summary>
+    </member>
+    <member name="P:dfScrollbar.StepSize">
+      <summary>
+            All values assigned to the Value property will be clamped to 
+            a multiple of StepSize. For example, if StepSize is 0.25 then
+            the Value property will always be a multiple of 0.25 such as
+            0.25, 0.5, 1.75, etc.
+            </summary>
+    </member>
+    <member name="P:dfScrollbar.ScrollSize">
+      <summary>
+            Represents viewable portion of the area being scrolled
+            </summary>
+    </member>
+    <member name="P:dfScrollbar.IncrementAmount">
+      <summary>
+            The amount added to or subtracted from the Value property when
+            the user clicks the increment/decrement buttons or uses the
+            mouse wheel
+            </summary>
+    </member>
+    <member name="P:dfScrollbar.Orientation">
+      <summary>
+            Gets or sets a value indicating the horizontal or 
+            vertical orientation of the Scrollbar
+            </summary>
+    </member>
+    <member name="P:dfScrollbar.Value">
+      <summary>
+            Gets or sets a numeric value that represents the current position of 
+            the scroll box on the track
+            </summary>
+    </member>
+    <member name="P:dfScrollbar.Thumb">
+      <summary>
+            Gets/Sets a reference to the dfControl used to display the Thumb button
+            </summary>
+    </member>
+    <member name="P:dfScrollbar.Track">
+      <summary>
+            Gets/Sets a reference to the dfControl that will be used to 
+            properly position and size the Thumb icon
+            </summary>
+    </member>
+    <member name="P:dfScrollbar.IncButton">
+      <summary>
+            Gets/Sets a reference to the dfControl (if any) that can be clicked
+            to increment the Value
+            </summary>
+    </member>
+    <member name="P:dfScrollbar.DecButton">
+      <summary>
+            Gets/Sets a reference to the dfControl (if any) that can be clicked
+            to decrement the Value
+            </summary>
+    </member>
+    <member name="P:dfScrollbar.ThumbPadding">
+      <summary>
+            The amount of padding to apply when positioning the Thumb control
+            </summary>
+    </member>
+    <member name="T:dfSlicedSprite">
+      <summary>
+            Displays a sprite from a Texture Atlas using 9-slice scaling
+            </summary>
+    </member>
+    <member name="T:dfSlider">
+      <summary>
+            Allows the user to select any value from a specified range by 
+            moving a thumb along a horizontal or vertical track
+            </summary>
+    </member>
+    <member name="P:dfSlider.Atlas">
+      <summary>
+            The <see cref="T:dfAtlas">Texture Atlas</see> containing the images used by this control
+            </summary>
+    </member>
+    <member name="P:dfSlider.BackgroundSprite">
+      <summary>
+            The name of the image in the <see cref="P:dfSlider.Atlas" /> that will be used to 
+            render the background of this control in its Default state
+            </summary>
+    </member>
+    <member name="P:dfSlider.MinValue">
+      <summary>
+            Gets/Sets the lower limit of the range of values this Slider can return
+            </summary>
+    </member>
+    <member name="P:dfSlider.MaxValue">
+      <summary>
+            Gets/Sets the upper limit of the range of values this Slider can return
+            </summary>
+    </member>
+    <member name="P:dfSlider.StepSize">
+      <summary>
+            All values assigned to the Value property will be clamped to 
+            a multiple of StepSize. For example, if StepSize is 0.25 then
+            the Value property will always be a multiple of 0.25 such as
+            0.25, 0.5, 1.75, etc.
+            </summary>
+    </member>
+    <member name="P:dfSlider.ScrollSize">
+      <summary>
+            Gets or sets the value to be added to or subtracted from the Value 
+            property when user scrolls the mouse wheel over this control
+            </summary>
+    </member>
+    <member name="P:dfSlider.Orientation">
+      <summary>
+            Gets or sets a value indicating the horizontal or vertical 
+            orientation of the Slider
+            </summary>
+    </member>
+    <member name="P:dfSlider.Value">
+      <summary>
+            Gets or sets a numeric value that represents the current position of 
+            the scroll box on the slider
+            </summary>
+    </member>
+    <member name="P:dfSlider.Thumb">
+      <summary>
+            Gets/Sets a reference to the dfControl used to display the Thumb button
+            </summary>
+    </member>
+    <member name="P:dfSlider.Progress">
+      <summary>
+            Gets/Sets a reference to the dfControl used to display the value as a 
+            progressively filled dfSprite
+            </summary>
+    </member>
+    <member name="P:dfSlider.FillMode">
+      <summary>
+            Indicates whether the progress indicator will be rendered via a stretched 
+            sprite or a filled sprite
+            </summary>
+    </member>
+    <member name="P:dfSlider.FillPadding">
+      <summary>
+            Gets or sets the amount of padding that will be applied when rendering
+            the progress indicator
+            </summary>
+    </member>
+    <member name="T:dfTabContainer">
+      <summary>
+            Used in conjunction with the <see cref="T:dfTabstrip" /> class to implement
+            tabbed containers. This control maintains the pages that are used to host
+            the controls, while <see cref="T:dfTabstrip" /> manages the tabs themselves.
+            </summary>
+    </member>
+    <member name="M:dfTabContainer.AddTabPage">
+      <summary>
+            Adds a new tab page to the list
+            </summary>
+      <returns>Returns a reference to the newly-created tab page</returns>
+    </member>
+    <member name="E:dfTabContainer.SelectedIndexChanged">
+      <summary>
+            Raised whenever the value of the <see cref="P:dfTabContainer.SelectedIndex" /> property has changed
+            </summary>
+    </member>
+    <member name="P:dfTabContainer.Atlas">
+      <summary>
+            The <see cref="T:dfAtlas">Texture Atlas</see> containing the images used by this control
+            </summary>
+    </member>
+    <member name="P:dfTabContainer.BackgroundSprite">
+      <summary>
+            The name of the image in the <see cref="P:dfTabContainer.Atlas" /> that will be used to 
+            render the background of this control
+            </summary>
+    </member>
+    <member name="P:dfTabContainer.Padding">
+      <summary>
+            Gets or sets the amount of padding that will be applied when 
+            layout out the tab pages
+            </summary>
+    </member>
+    <member name="P:dfTabContainer.SelectedIndex">
+      <summary>
+            Gets or sets the index of the currently visible tab page
+            </summary>
+    </member>
+    <member name="T:dfTabstrip">
+      <summary>
+            Used in conjunction with the <see cref="T:dfTabContainer" /> class to implement
+            tabbed containers. This control maintains the tabs that are displayed for
+            the user to select, and the <see cref="T:dfTabContainer" /> class manages the
+            display of the tab pages themselves.
+            </summary>
+    </member>
+    <member name="M:dfTabstrip.EnableTab(System.Int32)">
+      <summary>
+            Enable the tab at the specified index
+            </summary>
+      <param name="index">The index of the tab to be enabled</param>
+    </member>
+    <member name="M:dfTabstrip.DisableTab(System.Int32)">
+      <summary>
+            Disable the tab at the specified index
+            </summary>
+      <param name="index">The index of the tab to be disabled</param>
+    </member>
+    <member name="M:dfTabstrip.AddTab(System.String)">
+      <summary>
+            Adds a new tab to the list. If the <see cref="P:dfTabstrip.TabPages" /> property contains
+            a reference to a <see cref="T:dfTabContainer" /> control, it will also add a 
+            new tab page to that container. If there are already tabs in the list, the
+            new tab will be a shallow copy of the first tab except for the Text property. 
+            </summary>
+      <param name="Text">The text to be displayed in the tab</param>
+      <returns>Returns a reference to the newly-created tab control</returns>
+    </member>
+    <member name="E:dfTabstrip.SelectedIndexChanged">
+      <summary>
+            Raised whenever the value of the <see cref="P:dfTabstrip.SelectedIndex" /> property has changed
+            </summary>
+    </member>
+    <member name="P:dfTabstrip.TabPages">
+      <summary>
+            Gets or sets the associated <see cref="T:dfTabContainer" /> control, 
+            which will maintain a list of pages (one for each tab) that will 
+            be displayed when the corresponding tab is activated
+            </summary>
+    </member>
+    <member name="P:dfTabstrip.SelectedIndex">
+      <summary>
+            Gets/Sets the index of the currently selected Tab.
+            </summary>
+    </member>
+    <member name="P:dfTabstrip.Atlas">
+      <summary>
+            The <see cref="T:dfAtlas">Texture Atlas</see> containing the images used by this control
+            </summary>
+    </member>
+    <member name="P:dfTabstrip.BackgroundSprite">
+      <summary>
+            The name of the image in the <see cref="P:dfTabstrip.Atlas" /> that will be used to 
+            render the background of this control
+            </summary>
+    </member>
+    <member name="P:dfTabstrip.LayoutPadding">
+      <summary>
+            Gets or sets the amount of padding that will be applied to each 
+            tab control
+            </summary>
+    </member>
+    <member name="T:dfTextbox">
+      <summary>
+            Implements a text entry control.
+            </summary>
+    </member>
+    <member name="M:dfTextbox.ClearSelection">
+      <summary>
+            Clears the text selection range
+            </summary>
+    </member>
+    <member name="E:dfTextbox.ReadOnlyChanged">
+      <summary>
+            Raised whenever the value of the <see cref="P:dfTextbox.ReadOnly" /> property has changed
+            </summary>
+    </member>
+    <member name="E:dfTextbox.PasswordCharacterChanged">
+      <summary>
+            Raised whenever the value of the <see cref="P:dfTextbox.PasswordCharacter" /> property has changed
+            </summary>
+    </member>
+    <member name="E:dfTextbox.TextChanged">
+      <summary>
+            Raised whenever the value of the <see cref="P:dfTextbox.Text" /> property has changed
+            </summary>
+    </member>
+    <member name="E:dfTextbox.TextSubmitted">
+      <summary>
+            Raised when the user has indicated that they are done entering text, 
+            such as by pressing the RETURN key when this control has input focus
+            </summary>
+    </member>
+    <member name="E:dfTextbox.TextCancelled">
+      <summary>
+            Raised when the user has indicated that they would like to abort
+            editing of the <see cref="P:dfTextbox.Text" /> and would like to revert to the 
+            previous value, such as by pressing the ESC key when this control 
+            has input focus
+            </summary>
+    </member>
+    <member name="P:dfTextbox.Font">
+      <summary>
+            Gets or sets a reference to the <see cref="T:dfFont" /> that will be 
+            used to render the text for this control
+            </summary>
+    </member>
+    <member name="P:dfTextbox.SelectionStart">
+      <summary>
+            Gets or sets the character index for the start of the text selection range
+            </summary>
+    </member>
+    <member name="P:dfTextbox.SelectionEnd">
+      <summary>
+            Gets or sets the character index for the end of the text selection range
+            </summary>
+    </member>
+    <member name="P:dfTextbox.SelectionLength">
+      <summary>
+            Returns the length of the selected text
+            </summary>
+    </member>
+    <member name="P:dfTextbox.SelectedText">
+      <summary>
+            Returns the value of the selected text
+            </summary>
+    </member>
+    <member name="P:dfTextbox.SelectOnFocus">
+      <summary>
+            If set to TRUE, then all text will be selected when this control
+            receives input focus
+            </summary>
+    </member>
+    <member name="P:dfTextbox.Padding">
+      <summary>
+            Gets or sets the amount of padding that will be applied when 
+            rendering text for this control
+            </summary>
+    </member>
+    <member name="P:dfTextbox.IsPasswordField">
+      <summary>
+            Gets or sets a value indicating whether this control will be used
+            for entering passwords. If set to TRUE, then only the character 
+            specified by the <see cref="P:dfTextbox.PasswordCharacter" /> property will be
+            displayed instead of the actual text
+            </summary>
+    </member>
+    <member name="P:dfTextbox.PasswordCharacter">
+      <summary>
+            Gets or sets the character that will be substituted for each
+            character of text entered when <see cref="P:dfTextbox.IsPasswordField" />
+            is set to TRUE
+            </summary>
+    </member>
+    <member name="P:dfTextbox.CursorBlinkTime">
+      <summary>
+            Gets or sets the amount of time in seconds that the caret will blink
+            </summary>
+    </member>
+    <member name="P:dfTextbox.CursorWidth">
+      <summary>
+            Gets or sets the width of the caret, in pixels
+            </summary>
+    </member>
+    <member name="P:dfTextbox.ReadOnly">
+      <summary>
+            Gets or sets a value indicating whether the user is allowed to 
+            change the value of the <see cref="P:dfTextbox.Text" /></summary>
+    </member>
+    <member name="P:dfTextbox.Text">
+      <summary>
+            Gets or sets the text value
+            </summary>
+    </member>
+    <member name="P:dfTextbox.TextColor">
+      <summary>
+            Gets or sets the color that will be used to render text for this control
+            </summary>
+    </member>
+    <member name="P:dfTextbox.SelectionSprite">
+      <summary>
+            Specifies the name of a sprite that will be used to render the 
+            text selection background and the caret.
+            </summary>
+    </member>
+    <member name="P:dfTextbox.SelectionBackgroundColor">
+      <summary>
+            Gets or sets the color that will be used to render the text 
+            selection background
+            </summary>
+    </member>
+    <member name="P:dfTextbox.TextScale">
+      <summary>
+            Gets or sets the size multiplier that will be applied to 
+            all text rendered for this control
+            </summary>
+    </member>
+    <member name="P:dfTextbox.MaxLength">
+      <summary>
+            Gets or sets the maximum number of characters that can be entered
+            by the user
+            </summary>
+    </member>
+    <member name="P:dfTextbox.Shadow">
+      <summary>
+            Gets or sets a value indicating whether text will be rendered
+            with a shadow
+            </summary>
+    </member>
+    <member name="P:dfTextbox.ShadowColor">
+      <summary>
+            Gets or sets the color that will be used to render text shadows
+            if the <see cref="P:dfTextbox.Shadow" /> property is set to TRUE
+            </summary>
+    </member>
+    <member name="P:dfTextbox.ShadowOffset">
+      <summary>
+            Gets or sets the distance that text shadows will be offset
+            if the <see cref="P:dfTextbox.Shadow" /> is set to TRUE
+            </summary>
+    </member>
+    <member name="T:dfTextureSprite">
+      <summary>
+            Implements a dfSprite that allows the user to use any Texture and Material they wish
+            without having to use a Texture Atlas
+            </summary>
+    </member>
+    <member name="E:dfTextureSprite.TextureChanged">
+      <summary>
+            Raised whenever the value of the <see cref="P:dfTextureSprite.Texture" /> property has changed
+            </summary>
+    </member>
+    <member name="P:dfTextureSprite.Texture">
+      <summary>
+            Gets/Sets the <see cref="T:UnityEngine.Texture2D" /> that will be rendered
+            </summary>
+    </member>
+    <member name="P:dfTextureSprite.Material">
+      <summary>
+            Gets/Sets the <see cref="P:dfTextureSprite.Material" /> that will be used to render the <see cref="P:dfTextureSprite.Texture" /></summary>
+    </member>
+    <member name="P:dfTextureSprite.Flip">
+      <summary>
+            Gets or sets which axes will be flipped when rendering the sprite
+            </summary>
+    </member>
+    <member name="P:dfTextureSprite.FillDirection">
+      <summary>
+            Gets or sets which direction will be used for a fill operation 
+            during rendering
+            </summary>
+    </member>
+    <member name="P:dfTextureSprite.FillAmount">
+      <summary>
+            The amount (from 0.0 to 1.0) of the sprite's surface to be filled
+            </summary>
+    </member>
+    <member name="P:dfTextureSprite.InvertFill">
+      <summary>
+            If set to TRUE, will invert the fill direction
+            </summary>
+    </member>
+    <member name="P:dfTiledSprite.TileScale">
+      <summary>
+            Gets or sets the scale multiplier that will be applied to the
+            pattern when rendered
+            </summary>
+    </member>
+    <member name="P:dfTiledSprite.TileScroll">
+      <summary>
+            Gets or sets the offset that will be applied to the pattern 
+            when rendered. The value of each component (x,y) should be 
+            between 0 and 1, and values outside of this range will be 
+            adjusted or "wrapped". 
+            </summary>
+    </member>
+    <member name="T:dfWebSprite">
+      <summary>
+            Downloads an image from a web URL
+            </summary>
+    </member>
+    <member name="P:dfWebSprite.URL">
+      <summary>
+            Gets/Sets the URL that will be used to retrieve the Texture to display
+            </summary>
+    </member>
+    <member name="P:dfWebSprite.LoadingImage">
+      <summary>
+            Gets/Sets the <see cref="T:UnityEngine.Texture2D" /> that will be displayed
+            until the web image is downloaded
+            </summary>
+    </member>
+    <member name="P:dfWebSprite.ErrorImage">
+      <summary>
+            Gets/Sets the <see cref="T:UnityEngine.Texture2D" /> that will be displayed
+            if there is an error downloading the desired image from the web
+            </summary>
+    </member>
+  </members>
+</doc>
